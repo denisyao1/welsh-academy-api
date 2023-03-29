@@ -15,5 +15,6 @@ type Ingredient struct {
 type Recipe struct {
 	BaseModel
 	Name        string       `gorm:"uniqueIndex" json:"name"`
+	Making      string       `gorm:"type:text;not null" json:"making"`
 	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients" json:"ingredients"`
 }

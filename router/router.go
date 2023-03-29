@@ -28,7 +28,7 @@ func (r Router) InitRoutes(app *fiber.App) {
 	app.Post("/ingredients", r.ingredientController.CreateIngredient)
 	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
 	app.Post("/recipes", r.recipeController.CreateRecipe)
-
+	app.Get("/recipes", r.recipeController.ListRecipes)
 }
 
 func (r Router) Start(app *fiber.App) {

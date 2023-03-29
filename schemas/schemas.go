@@ -1,6 +1,5 @@
 package schemas
 
-type Recipe struct {
-	Name        string
-	Ingredients []string
+type IngredientQuerySchema struct {
+	Ingredients []string `query:"ingredients"`
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/denisyao1/welsh-academy-api/exceptions"
 	"github.com/denisyao1/welsh-academy-api/models"
+	"github.com/denisyao1/welsh-academy-api/schemas"
 	"github.com/denisyao1/welsh-academy-api/services"
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,7 +22,9 @@ func NewRecipeController(service services.RecipeService) RecipeController {
 func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 	var recipe models.Recipe
 
-	ctx.BodyParser(&recipe)
+	if err := ctx.BodyParser(&recipe); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
+	}
 	validationErrs := c.service.ValidateAndTransform(&recipe)
 	if validationErrs != nil {
 		if len(validationErrs) == 1 {
@@ -41,4 +44,19 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(201).JSON(recipe)
+}
+
+func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
+	ingredientQuery := new(schemas.IngredientQuerySchema)
+	errQuery := ctx.QueryParser(ingredientQuery)
+	if errQuery != nil {
+		ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request query string"})
+	}
+	ingredientNames := ingredientQuery.Ingredients
+	recipes, err := c.service.ListAllPossible(ingredientNames)
+	if err != nil {
+		ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return ctx.Status(200).JSON(recipes)
 }

@@ -21,7 +21,9 @@ func NewIngredientController(service services.IngredientService) IngredientContr
 func (c *IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 	var ingredient models.Ingredient
 
-	ctx.BodyParser(&ingredient)
+	if err := ctx.BodyParser(&ingredient); err != nil {
+		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
+	}
 	validationErr := c.service.Validate(ingredient)
 	if validationErr != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": validationErr})

@@ -8,7 +8,8 @@ import (
 type RecipeRepository interface {
 	Create(receipe *models.Recipe) error
 	CheckIfNotCreated(recipe models.Recipe) (bool, error)
-	// FindAllContainging(ingredients []models.Ingredient) ([]models.Recipe, error)
+	FindAll() ([]models.Recipe, error)
+	FindAllContainging(ingredientNames []string) ([]models.Recipe, error)
 }
 
 type gormRecipeRepo struct {
@@ -29,16 +30,34 @@ func (r gormRecipeRepo) CheckIfNotCreated(recipe models.Recipe) (bool, error) {
 }
 
 func (r gormRecipeRepo) Create(recipe *models.Recipe) error {
-	result := r.db.Create(recipe) // utiliser le omit pour ne pas créer les ingredients
-
-	if result.Error != nil {
-		return result.Error
-	}
-	return nil
+	err := r.db.Create(recipe).Error
+	return err
 }
 
-func (r gormRecipeRepo) FindAllContainging(ingredients []models.Ingredient) ([]models.Recipe, error) {
+func (r gormRecipeRepo) FindAll() ([]models.Recipe, error) {
+	var recipes []models.Recipe
 
-	return nil, nil
+	err := r.db.Model(&models.Recipe{}).
+		Preload("Ingredients").
+		Find(&recipes).Error
+
+	return recipes, err
+}
+
+func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]models.Recipe, error) {
+	var recipes []models.Recipe
+
+	subQuery := r.db.Table("recipes AS r").
+		Select("r.id").
+		Joins("INNER JOIN recipe_ingredients ri ON ri.recipe_id=r.id").
+		Joins("INNER JOIN ingredients ing ON ing.id=ri.ingredient_id").
+		Where("ing.name in ?", ingredientNames)
+
+	err := r.db.Model(&models.Recipe{}).
+		Preload("Ingredients").
+		Where("id in (?)", subQuery).
+		Find(&recipes).Error
+
+	return recipes, err
 
 }
