@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/denisyao1/welsh-academy-api/exceptions"
 	"github.com/denisyao1/welsh-academy-api/models"
 	"github.com/denisyao1/welsh-academy-api/services"
@@ -26,8 +29,10 @@ func (c *IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 
 	err := c.service.Create(&ingredient)
 	if err != nil {
-		if error, ok := err.(exceptions.DuplicateKeyError); ok {
-			return ctx.Status(400).JSON(fiber.Map{"error": error.Error()})
+
+		if errors.Is(err, exceptions.ErrDuplicateKey) {
+			message := fmt.Sprintf("An ingredient named '%s' already exists.", ingredient.Name)
+			return ctx.Status(409).JSON(fiber.Map{"error": message})
 		}
 		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})
 
@@ -37,8 +42,8 @@ func (c *IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 }
 
 func (c IngredientController) ListAllIngredients(ctx *fiber.Ctx) error {
-	var ingredients []models.Ingredient
-	err := c.service.FindAll(&ingredients)
+
+	ingredients, err := c.service.FindAll()
 
 	if err != nil {
 		return ctx.Status(500).JSON(fiber.Map{"error": err})

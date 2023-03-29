@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type GormDB struct {
@@ -14,7 +15,8 @@ type GormDB struct {
 
 func NewGormDB() *GormDB {
 	dns := os.Getenv("DB_DNS")
-	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{})
+	// @TODO : delete DB logger config
+	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{Logger: logger.Default.LogMode(logger.Info)})
 	if err != nil {
 		log.Fatal("Failed to connect to database.")
 

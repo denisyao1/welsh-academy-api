@@ -13,4 +13,5 @@ func init() {
 func main() {
 	gormDB := database.NewGormDB().GetDB()
 	gormDB.AutoMigrate(&models.Ingredient{})
+	gormDB.AutoMigrate(&models.Recipe{})
 }

@@ -10,16 +10,24 @@ import (
 
 type Router struct {
 	ingredientController controllers.IngredientController
+	recipeController     controllers.RecipeController
 }
 
-func New(ingredientController controllers.IngredientController) *Router {
-	return &Router{ingredientController: ingredientController}
+func New(
+	ingredientController controllers.IngredientController,
+	recipeController controllers.RecipeController,
+) *Router {
+	return &Router{
+		ingredientController: ingredientController,
+		recipeController:     recipeController,
+	}
 }
 
 func (r Router) InitRoutes(app *fiber.App) {
 	app.Get("/health", controllers.HealthCheck)
 	app.Post("/ingredients", r.ingredientController.CreateIngredient)
 	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
+	app.Post("/recipes", r.recipeController.CreateRecipe)
 
 }
 

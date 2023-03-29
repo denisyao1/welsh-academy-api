@@ -1,37 +1,59 @@
 package repositories
 
 import (
-	"github.com/denisyao1/welsh-academy-api/exceptions"
 	"github.com/denisyao1/welsh-academy-api/models"
 	"gorm.io/gorm"
 )
 
 type IngredientRepository interface {
 	Create(ingredient *models.Ingredient) error
-	FindAll(ingredients *[]models.Ingredient) error
+	FindAll() ([]models.Ingredient, error)
+	CheckIfNotCreated(ingredient *models.Ingredient) (bool, error)
+	FindNamed(names []string) ([]models.Ingredient, error)
 }
 
-type gormRepo struct {
+type gormIngredientRepo struct {
 	db *gorm.DB
 }
 
 func NewGormIngredientRepository(db *gorm.DB) IngredientRepository {
-	return &gormRepo{db: db}
+	return &gormIngredientRepo{db: db}
 }
 
-func (r gormRepo) Create(ingredient *models.Ingredient) error {
+func (r gormIngredientRepo) Create(ingredient *models.Ingredient) error {
 	result := r.db.Create(ingredient)
 
 	if result.Error != nil {
-		return exceptions.NewDuplicateKeyError(ingredient.Name)
+		return result.Error
 	}
 	return nil
 }
 
-func (r gormRepo) FindAll(ingredients *[]models.Ingredient) error {
-	results := r.db.Find(ingredients)
+func (r gormIngredientRepo) FindAll() ([]models.Ingredient, error) {
+	var ingredients []models.Ingredient
+	results := r.db.Find(&ingredients)
 	if results.Error != nil {
-		return results.Error
+		return nil, results.Error
 	}
-	return nil
+	return ingredients, nil
+}
+
+func (r gormIngredientRepo) CheckIfNotCreated(ingredient *models.Ingredient) (bool, error) {
+	var ingredientB models.Ingredient
+	result := r.db.Where("name=?", ingredient.Name).Find(&ingredientB)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected == 0, nil
+}
+
+func (r gormIngredientRepo) FindNamed(names []string) ([]models.Ingredient, error) {
+	var ingredients []models.Ingredient
+
+	result := r.db.Where("name IN ?", names).Find(&ingredients)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return ingredients, nil
 }
