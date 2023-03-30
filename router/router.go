@@ -5,25 +5,32 @@ import (
 	"os"
 
 	"github.com/denisyao1/welsh-academy-api/controller"
+	"github.com/denisyao1/welsh-academy-api/middleware"
+	"github.com/denisyao1/welsh-academy-api/model"
+
+	// "github.com/gofiber/fiber/middleware"
 	"github.com/gofiber/fiber/v2"
-	jwtware "github.com/gofiber/jwt/v3"
 )
 
 type Router struct {
 	ingredientController controller.IngredientController
 	recipeController     controller.RecipeController
 	userController       controller.UserController
+	SigningKey           string
 }
 
 func New(
 	ingredientController controller.IngredientController,
 	recipeController controller.RecipeController,
 	userController controller.UserController,
+	signingKey string,
+
 ) *Router {
 	return &Router{
 		ingredientController: ingredientController,
 		recipeController:     recipeController,
 		userController:       userController,
+		SigningKey:           signingKey,
 	}
 }
 
@@ -38,13 +45,9 @@ func (r Router) InitRoutes(app *fiber.App) {
 	app.Post("/login", r.userController.Login)
 	app.Get("/logout", r.userController.Logout)
 
-	// JWT Middleware
-	app.Use(jwtware.New(jwtware.Config{
-		SigningKey: []byte(os.Getenv("JWT_SECRET")),
-	}))
-
-	// Protected routes
+	app.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))
 	app.Get("/infos", r.userController.UserInfos)
+
 }
 
 func (r Router) Start(app *fiber.App) {

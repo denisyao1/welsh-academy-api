@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/denisyao1/welsh-academy-api/database"
@@ -32,7 +33,7 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userController := controller.NewUserController(userService)
 
-	router := router.New(ingredienController, recipeController, userController)
+	router := router.New(ingredienController, recipeController, userController, os.Getenv("JWT_SECRET"))
 
 	app := fiber.New()
 

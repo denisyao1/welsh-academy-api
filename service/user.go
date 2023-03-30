@@ -119,10 +119,16 @@ func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, 
 		return "", err
 	}
 
+	role := model.RoleUser
+	if user.IsAdmin {
+		role = model.RoleAdmin
+	}
+
 	// Create the Claims
 	claims := jwt.MapClaims{
-		"ID":  strconv.Itoa(int(user.ID)),
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
+		"ID":   strconv.Itoa(int(user.ID)),
+		"role": role,
+		"exp":  time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	// Create token
