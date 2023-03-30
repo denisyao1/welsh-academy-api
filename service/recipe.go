@@ -1,32 +1,32 @@
-package services
+package service
 
 import (
 	"fmt"
 
-	"github.com/denisyao1/welsh-academy-api/exceptions"
-	"github.com/denisyao1/welsh-academy-api/models"
-	"github.com/denisyao1/welsh-academy-api/repositories"
-	"github.com/denisyao1/welsh-academy-api/utils"
+	"github.com/denisyao1/welsh-academy-api/exception"
+	"github.com/denisyao1/welsh-academy-api/model"
+	"github.com/denisyao1/welsh-academy-api/repository"
+	"github.com/denisyao1/welsh-academy-api/util"
 )
 
 type RecipeService interface {
-	Validate(recipe *models.Recipe) []error
-	Create(recipe *models.Recipe) error
-	transform(recipe *models.Recipe) []error
-	ListAllPossible(ingredientNames []string) ([]models.Recipe, error)
+	Validate(recipe *model.Recipe) []error
+	Create(recipe *model.Recipe) error
+	transform(recipe *model.Recipe) []error
+	ListAllPossible(ingredientNames []string) ([]model.Recipe, error)
 }
 
 type recipeService struct {
-	recipeRepo     repositories.RecipeRepository
-	ingredientRepo repositories.IngredientRepository
+	recipeRepo     repository.RecipeRepository
+	ingredientRepo repository.IngredientRepository
 }
 
-func NewRecipeService(recipeRepo repositories.RecipeRepository, ingredientRepo repositories.IngredientRepository) RecipeService {
+func NewRecipeService(recipeRepo repository.RecipeRepository, ingredientRepo repository.IngredientRepository) RecipeService {
 	return &recipeService{recipeRepo: recipeRepo, ingredientRepo: ingredientRepo}
 }
 
-func (s recipeService) Validate(recipe *models.Recipe) []error {
-	var newErrValidation = exceptions.NewValidationError
+func (s recipeService) Validate(recipe *model.Recipe) []error {
+	var newErrValidation = exception.NewValidationError
 	var errs []error
 
 	// recipe name must be non null
@@ -46,7 +46,7 @@ func (s recipeService) Validate(recipe *models.Recipe) []error {
 	}
 
 	// recipe ingredients slice  must not contains duplicate
-	noDuplicate := utils.SliceHasNoDuplicate(recipe.Ingredients)
+	noDuplicate := util.SliceHasNoDuplicate(recipe.Ingredients)
 	if !noDuplicate {
 		errs = append(errs, newErrValidation("ingredients", "recipe ingredients contains duplicate"))
 	}
@@ -58,7 +58,7 @@ func (s recipeService) Validate(recipe *models.Recipe) []error {
 	return s.transform(recipe)
 }
 
-func (s recipeService) transform(recipe *models.Recipe) []error {
+func (s recipeService) transform(recipe *model.Recipe) []error {
 	var names []string
 
 	for _, i := range recipe.Ingredients {
@@ -77,21 +77,21 @@ func (s recipeService) transform(recipe *models.Recipe) []error {
 
 	var errs []error
 	var dbNames []string
-	var newErr = exceptions.NewValidationError
+	var newErr = exception.NewValidationError
 
 	for _, elm := range dbIngredients {
 		dbNames = append(dbNames, elm.Name)
 	}
 
 	for _, name := range names {
-		if !utils.Contains(name, dbNames) {
+		if !util.Contains(name, dbNames) {
 			errs = append(errs, newErr("ingredients", fmt.Sprintf("'%s' is not a valid ingredient", name)))
 		}
 	}
 	return errs
 }
 
-func (s recipeService) Create(recipe *models.Recipe) error {
+func (s recipeService) Create(recipe *model.Recipe) error {
 	ok, err := s.recipeRepo.CheckIfNotCreated(*recipe)
 
 	if err != nil {
@@ -99,12 +99,12 @@ func (s recipeService) Create(recipe *models.Recipe) error {
 	}
 
 	if !ok {
-		return exceptions.ErrDuplicateKey
+		return exception.ErrDuplicateKey
 	}
 	return s.recipeRepo.Create(recipe)
 }
 
-func (s recipeService) ListAllPossible(ingredientNames []string) ([]models.Recipe, error) {
+func (s recipeService) ListAllPossible(ingredientNames []string) ([]model.Recipe, error) {
 	if len(ingredientNames) == 0 {
 		return s.recipeRepo.FindAll()
 	}

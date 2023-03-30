@@ -1,28 +1,28 @@
-package controllers
+package controller
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/denisyao1/welsh-academy-api/exceptions"
-	"github.com/denisyao1/welsh-academy-api/schemas"
-	"github.com/denisyao1/welsh-academy-api/services"
+	"github.com/denisyao1/welsh-academy-api/exception"
+	"github.com/denisyao1/welsh-academy-api/schema"
+	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
 )
 
 type UserController struct {
-	service services.UserService
+	service service.UserService
 }
 
-func NewUserController(service services.UserService) UserController {
+func NewUserController(service service.UserService) UserController {
 	fmt.Println("service=", service)
 	return UserController{service: service}
 }
 
 func (c UserController) CreateUser(ctx *fiber.Ctx) error {
-	var userSchema schemas.CreateUserSchema
+	var userSchema schema.CreateUserSchema
 
 	if err := ctx.BodyParser(&userSchema); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
@@ -39,7 +39,7 @@ func (c UserController) CreateUser(ctx *fiber.Ctx) error {
 	user, err := c.service.CreateUser(userSchema)
 
 	if err != nil {
-		if errors.Is(err, exceptions.ErrDuplicateKey) {
+		if errors.Is(err, exception.ErrDuplicateKey) {
 			message := fmt.Sprintf("username '%s' already exists.", user.Username)
 			return ctx.Status(409).JSON(fiber.Map{"error": message})
 		}
@@ -52,7 +52,7 @@ func (c UserController) CreateUser(ctx *fiber.Ctx) error {
 
 func (c UserController) Login(ctx *fiber.Ctx) error {
 	// get request body
-	var loginSchema schemas.LoginSchema
+	var loginSchema schema.LoginSchema
 	if err := ctx.BodyParser(&loginSchema); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
 	}
@@ -60,7 +60,7 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 	// create token
 	token, err := c.service.CreateAccessToken(loginSchema)
 	if err != nil {
-		if errors.Is(err, exceptions.ErrInvalidCredentials) {
+		if errors.Is(err, exception.ErrInvalidCredentials) {
 			return ctx.Status(401).JSON(fiber.Map{"error": "invalid credentials"})
 		}
 		return ctx.Status(500).JSON(fiber.Map{"error": err.Error()})

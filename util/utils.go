@@ -1,4 +1,4 @@
-package utils
+package util
 
 func SliceHasNoDuplicate[T comparable](slice []T) bool {
 	m := make(map[T]int)

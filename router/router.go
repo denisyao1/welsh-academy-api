@@ -4,21 +4,21 @@ import (
 	"log"
 	"os"
 
-	"github.com/denisyao1/welsh-academy-api/controllers"
+	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 )
 
 type Router struct {
-	ingredientController controllers.IngredientController
-	recipeController     controllers.RecipeController
-	userController       controllers.UserController
+	ingredientController controller.IngredientController
+	recipeController     controller.RecipeController
+	userController       controller.UserController
 }
 
 func New(
-	ingredientController controllers.IngredientController,
-	recipeController controllers.RecipeController,
-	userController controllers.UserController,
+	ingredientController controller.IngredientController,
+	recipeController controller.RecipeController,
+	userController controller.UserController,
 ) *Router {
 	return &Router{
 		ingredientController: ingredientController,
@@ -28,7 +28,7 @@ func New(
 }
 
 func (r Router) InitRoutes(app *fiber.App) {
-	app.Get("/health", controllers.HealthCheck)
+	app.Get("/health", controller.HealthCheck)
 	app.Post("/ingredients", r.ingredientController.CreateIngredient)
 	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
 	app.Post("/recipes", r.recipeController.CreateRecipe)

@@ -1,15 +1,15 @@
-package repositories
+package repository
 
 import (
-	"github.com/denisyao1/welsh-academy-api/models"
+	"github.com/denisyao1/welsh-academy-api/model"
 	"gorm.io/gorm"
 )
 
 type RecipeRepository interface {
-	Create(receipe *models.Recipe) error
-	CheckIfNotCreated(recipe models.Recipe) (bool, error)
-	FindAll() ([]models.Recipe, error)
-	FindAllContainging(ingredientNames []string) ([]models.Recipe, error)
+	Create(receipe *model.Recipe) error
+	CheckIfNotCreated(recipe model.Recipe) (bool, error)
+	FindAll() ([]model.Recipe, error)
+	FindAllContainging(ingredientNames []string) ([]model.Recipe, error)
 }
 
 type gormRecipeRepo struct {
@@ -20,8 +20,8 @@ func NewGormRecipeRepository(db *gorm.DB) RecipeRepository {
 	return &gormRecipeRepo{db: db}
 }
 
-func (r gormRecipeRepo) CheckIfNotCreated(recipe models.Recipe) (bool, error) {
-	var recipeB models.Recipe
+func (r gormRecipeRepo) CheckIfNotCreated(recipe model.Recipe) (bool, error) {
+	var recipeB model.Recipe
 	result := r.db.Where("name=?", recipe.Name).Find(&recipeB)
 	if result.Error != nil {
 		return false, result.Error
@@ -29,23 +29,23 @@ func (r gormRecipeRepo) CheckIfNotCreated(recipe models.Recipe) (bool, error) {
 	return result.RowsAffected == 0, nil
 }
 
-func (r gormRecipeRepo) Create(recipe *models.Recipe) error {
+func (r gormRecipeRepo) Create(recipe *model.Recipe) error {
 	err := r.db.Create(recipe).Error
 	return err
 }
 
-func (r gormRecipeRepo) FindAll() ([]models.Recipe, error) {
-	var recipes []models.Recipe
+func (r gormRecipeRepo) FindAll() ([]model.Recipe, error) {
+	var recipes []model.Recipe
 
-	err := r.db.Model(&models.Recipe{}).
+	err := r.db.Model(&model.Recipe{}).
 		Preload("Ingredients").
 		Find(&recipes).Error
 
 	return recipes, err
 }
 
-func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]models.Recipe, error) {
-	var recipes []models.Recipe
+func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]model.Recipe, error) {
+	var recipes []model.Recipe
 
 	subQuery := r.db.Table("recipes AS r").
 		Select("r.id").
@@ -53,7 +53,7 @@ func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]models.R
 		Joins("INNER JOIN ingredients ing ON ing.id=ri.ingredient_id").
 		Where("ing.name in ?", ingredientNames)
 
-	err := r.db.Model(&models.Recipe{}).
+	err := r.db.Model(&model.Recipe{}).
 		Preload("Ingredients").
 		Where("id in (?)", subQuery).
 		Find(&recipes).Error

@@ -3,34 +3,34 @@ package main
 import (
 	"log"
 
-	"github.com/denisyao1/welsh-academy-api/controllers"
+	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/denisyao1/welsh-academy-api/database"
-	"github.com/denisyao1/welsh-academy-api/initializers"
-	"github.com/denisyao1/welsh-academy-api/repositories"
+	"github.com/denisyao1/welsh-academy-api/initializer"
+	"github.com/denisyao1/welsh-academy-api/repository"
 	"github.com/denisyao1/welsh-academy-api/router"
-	"github.com/denisyao1/welsh-academy-api/services"
+	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
-	envErr := initializers.LoadEnvVariables()
+	envErr := initializer.LoadEnvVariables()
 	if envErr != nil {
 		log.Fatal("Failed to load env variable")
 	}
 
 	gormDB := database.NewGormDB()
 
-	ingredientRepo := repositories.NewGormIngredientRepository(gormDB.GetDB())
-	ingredientService := services.NewIngredientService(ingredientRepo)
-	ingredienController := controllers.NewIngredientController(ingredientService)
+	ingredientRepo := repository.NewGormIngredientRepository(gormDB.GetDB())
+	ingredientService := service.NewIngredientService(ingredientRepo)
+	ingredienController := controller.NewIngredientController(ingredientService)
 
-	recipeRepo := repositories.NewGormRecipeRepository(gormDB.GetDB())
-	recipeService := services.NewRecipeService(recipeRepo, ingredientRepo)
-	recipeController := controllers.NewRecipeController(recipeService)
+	recipeRepo := repository.NewGormRecipeRepository(gormDB.GetDB())
+	recipeService := service.NewRecipeService(recipeRepo, ingredientRepo)
+	recipeController := controller.NewRecipeController(recipeService)
 
-	userRepo := repositories.NewUserRepository(gormDB.GetDB())
-	userService := services.NewUserService(userRepo)
-	userController := controllers.NewUserController(userService)
+	userRepo := repository.NewUserRepository(gormDB.GetDB())
+	userService := service.NewUserService(userRepo)
+	userController := controller.NewUserController(userService)
 
 	router := router.New(ingredienController, recipeController, userController)
 

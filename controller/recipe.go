@@ -1,26 +1,26 @@
-package controllers
+package controller
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/denisyao1/welsh-academy-api/exceptions"
-	"github.com/denisyao1/welsh-academy-api/models"
-	"github.com/denisyao1/welsh-academy-api/schemas"
-	"github.com/denisyao1/welsh-academy-api/services"
+	"github.com/denisyao1/welsh-academy-api/exception"
+	"github.com/denisyao1/welsh-academy-api/model"
+	"github.com/denisyao1/welsh-academy-api/schema"
+	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
 )
 
 type RecipeController struct {
-	service services.RecipeService
+	service service.RecipeService
 }
 
-func NewRecipeController(service services.RecipeService) RecipeController {
+func NewRecipeController(service service.RecipeService) RecipeController {
 	return RecipeController{service: service}
 }
 
 func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
-	var recipe models.Recipe
+	var recipe model.Recipe
 
 	if err := ctx.BodyParser(&recipe); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
@@ -36,7 +36,7 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 
 	err := c.service.Create(&recipe)
 	if err != nil {
-		if errors.Is(err, exceptions.ErrDuplicateKey) {
+		if errors.Is(err, exception.ErrDuplicateKey) {
 			message := fmt.Sprintf("A recipe named '%s' already exists.", recipe.Name)
 			return ctx.Status(409).JSON(fiber.Map{"error": message})
 		}
@@ -48,7 +48,7 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 }
 
 func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
-	ingredientQuery := new(schemas.IngredientQuerySchema)
+	ingredientQuery := new(schema.IngredientQuerySchema)
 	errQuery := ctx.QueryParser(ingredientQuery)
 	if errQuery != nil {
 		ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request query string"})

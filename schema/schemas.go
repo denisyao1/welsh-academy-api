@@ -1,4 +1,4 @@
-package schemas
+package schema
 
 type IngredientQuerySchema struct {
 	Ingredients []string `query:"ingredients"`

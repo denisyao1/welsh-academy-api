@@ -1,35 +1,35 @@
-package services
+package service
 
 import (
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/denisyao1/welsh-academy-api/exceptions"
-	"github.com/denisyao1/welsh-academy-api/models"
-	"github.com/denisyao1/welsh-academy-api/repositories"
-	"github.com/denisyao1/welsh-academy-api/schemas"
+	"github.com/denisyao1/welsh-academy-api/exception"
+	"github.com/denisyao1/welsh-academy-api/model"
+	"github.com/denisyao1/welsh-academy-api/repository"
+	"github.com/denisyao1/welsh-academy-api/schema"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService interface {
-	ValidateUserCreation(userSchema schemas.CreateUserSchema) []error
-	validateCredentials(loginSchema schemas.LoginSchema) (models.User, error)
-	CreateUser(userSchema schemas.CreateUserSchema) (models.User, error)
-	CreateAccessToken(loginSchema schemas.LoginSchema) (string, error)
+	ValidateUserCreation(userSchema schema.CreateUserSchema) []error
+	validateCredentials(loginSchema schema.LoginSchema) (model.User, error)
+	CreateUser(userSchema schema.CreateUserSchema) (model.User, error)
+	CreateAccessToken(loginSchema schema.LoginSchema) (string, error)
 }
 
 type userService struct {
-	repo repositories.UserRepository
+	repo repository.UserRepository
 }
 
-func NewUserService(repo repositories.UserRepository) UserService {
+func NewUserService(repo repository.UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s userService) ValidateUserCreation(userSchema schemas.CreateUserSchema) []error {
-	var newErrValidation = exceptions.NewValidationError
+func (s userService) ValidateUserCreation(userSchema schema.CreateUserSchema) []error {
+	var newErrValidation = exception.NewValidationError
 	var errs []error
 
 	if userSchema.Username == "" {
@@ -53,9 +53,9 @@ func (s userService) ValidateUserCreation(userSchema schemas.CreateUserSchema) [
 	return errs
 }
 
-func (s userService) CreateUser(userSchema schemas.CreateUserSchema) (models.User, error) {
+func (s userService) CreateUser(userSchema schema.CreateUserSchema) (model.User, error) {
 
-	user := models.User{Username: userSchema.Username, IsAdmin: userSchema.IsAdmin}
+	user := model.User{Username: userSchema.Username, IsAdmin: userSchema.IsAdmin}
 
 	// Check if username is already used in DB
 	ok, checkErr := s.repo.CheckIfNotCreated(user)
@@ -65,7 +65,7 @@ func (s userService) CreateUser(userSchema schemas.CreateUserSchema) (models.Use
 	}
 
 	if !ok {
-		return user, exceptions.ErrDuplicateKey
+		return user, exception.ErrDuplicateKey
 	}
 
 	// hash password
@@ -81,16 +81,16 @@ func (s userService) CreateUser(userSchema schemas.CreateUserSchema) (models.Use
 	return user, err
 }
 
-func (s userService) validateCredentials(loginSchema schemas.LoginSchema) (models.User, error) {
-	var user models.User
+func (s userService) validateCredentials(loginSchema schema.LoginSchema) (model.User, error) {
+	var user model.User
 
 	if loginSchema.Username == "" || loginSchema.Pasword == "" {
-		return user, exceptions.ErrInvalidCredentials
+		return user, exception.ErrInvalidCredentials
 	}
 
 	// username must be at least 3 characters long; password at least 4 characters long
 	if len([]rune(loginSchema.Username)) < 3 || len([]rune(loginSchema.Username)) < 4 {
-		return user, exceptions.ErrInvalidCredentials
+		return user, exception.ErrInvalidCredentials
 	}
 
 	user.Username = loginSchema.Username
@@ -100,19 +100,19 @@ func (s userService) validateCredentials(loginSchema schemas.LoginSchema) (model
 	}
 
 	if user.ID == 0 {
-		return user, exceptions.ErrInvalidCredentials
+		return user, exception.ErrInvalidCredentials
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginSchema.Pasword))
 
 	if err != nil {
-		return user, exceptions.ErrInvalidCredentials
+		return user, exception.ErrInvalidCredentials
 	}
 
 	return user, nil
 }
 
-func (s userService) CreateAccessToken(loginSchema schemas.LoginSchema) (string, error) {
+func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, error) {
 	// validate user credentials
 	user, err := s.validateCredentials(loginSchema)
 	if err != nil {

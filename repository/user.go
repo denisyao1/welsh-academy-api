@@ -1,14 +1,14 @@
-package repositories
+package repository
 
 import (
-	"github.com/denisyao1/welsh-academy-api/models"
+	"github.com/denisyao1/welsh-academy-api/model"
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
-	CheckIfNotCreated(user models.User) (bool, error)
-	Create(user *models.User) error
-	GetUserByUsername(user *models.User) error
+	CheckIfNotCreated(user model.User) (bool, error)
+	Create(user *model.User) error
+	GetUserByUsername(user *model.User) error
 }
 
 type userRepo struct {
@@ -19,15 +19,15 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepo{db: db}
 }
 
-func (r userRepo) Create(user *models.User) error {
+func (r userRepo) Create(user *model.User) error {
 
 	err := r.db.Create(user).Error
 
 	return err
 }
 
-func (r userRepo) CheckIfNotCreated(user models.User) (bool, error) {
-	var userB models.User
+func (r userRepo) CheckIfNotCreated(user model.User) (bool, error) {
+	var userB model.User
 	result := r.db.Where("username=?", user.Username).Find(&userB)
 	if result.Error != nil {
 		return false, result.Error
@@ -35,7 +35,7 @@ func (r userRepo) CheckIfNotCreated(user models.User) (bool, error) {
 	return result.RowsAffected == 0, nil
 }
 
-func (r userRepo) GetUserByUsername(user *models.User) error {
+func (r userRepo) GetUserByUsername(user *model.User) error {
 
 	return r.db.Find(user).Error
 }

@@ -1,25 +1,25 @@
-package controllers
+package controller
 
 import (
 	"errors"
 	"fmt"
 
-	"github.com/denisyao1/welsh-academy-api/exceptions"
-	"github.com/denisyao1/welsh-academy-api/models"
-	"github.com/denisyao1/welsh-academy-api/services"
+	"github.com/denisyao1/welsh-academy-api/exception"
+	"github.com/denisyao1/welsh-academy-api/model"
+	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
 )
 
 type IngredientController struct {
-	service services.IngredientService
+	service service.IngredientService
 }
 
-func NewIngredientController(service services.IngredientService) IngredientController {
+func NewIngredientController(service service.IngredientService) IngredientController {
 	return IngredientController{service: service}
 }
 
 func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
-	var ingredient models.Ingredient
+	var ingredient model.Ingredient
 
 	if err := ctx.BodyParser(&ingredient); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
@@ -32,7 +32,7 @@ func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 	err := c.service.Create(&ingredient)
 	if err != nil {
 
-		if errors.Is(err, exceptions.ErrDuplicateKey) {
+		if errors.Is(err, exception.ErrDuplicateKey) {
 			message := fmt.Sprintf("An ingredient named '%s' already exists.", ingredient.Name)
 			return ctx.Status(409).JSON(fiber.Map{"error": message})
 		}
