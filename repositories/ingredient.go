@@ -8,7 +8,7 @@ import (
 type IngredientRepository interface {
 	Create(ingredient *models.Ingredient) error
 	FindAll() ([]models.Ingredient, error)
-	CheckIfNotCreated(ingredient *models.Ingredient) (bool, error)
+	CheckIfNotCreated(ingredient models.Ingredient) (bool, error)
 	FindNamed(names []string) ([]models.Ingredient, error)
 }
 
@@ -38,7 +38,7 @@ func (r gormIngredientRepo) FindAll() ([]models.Ingredient, error) {
 	return ingredients, nil
 }
 
-func (r gormIngredientRepo) CheckIfNotCreated(ingredient *models.Ingredient) (bool, error) {
+func (r gormIngredientRepo) CheckIfNotCreated(ingredient models.Ingredient) (bool, error) {
 	var ingredientB models.Ingredient
 	result := r.db.Where("name=?", ingredient.Name).Find(&ingredientB)
 	if result.Error != nil {

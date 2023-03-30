@@ -19,6 +19,7 @@ func main() {
 	}
 
 	gormDB := database.NewGormDB()
+
 	ingredientRepo := repositories.NewGormIngredientRepository(gormDB.GetDB())
 	ingredientService := services.NewIngredientService(ingredientRepo)
 	ingredienController := controllers.NewIngredientController(ingredientService)
@@ -27,7 +28,11 @@ func main() {
 	recipeService := services.NewRecipeService(recipeRepo, ingredientRepo)
 	recipeController := controllers.NewRecipeController(recipeService)
 
-	router := router.New(ingredienController, recipeController)
+	userRepo := repositories.NewUserRepository(gormDB.GetDB())
+	userService := services.NewUserService(userRepo)
+	userController := controllers.NewUserController(userService)
+
+	router := router.New(ingredienController, recipeController, userController)
 
 	app := fiber.New()
 

@@ -25,7 +25,8 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&recipe); err != nil {
 		return ctx.Status(400).JSON(fiber.Map{"error": "Failed to read request body"})
 	}
-	validationErrs := c.service.ValidateAndTransform(&recipe)
+
+	validationErrs := c.service.Validate(&recipe)
 	if validationErrs != nil {
 		if len(validationErrs) == 1 {
 			return ctx.Status(400).JSON(fiber.Map{"error": validationErrs[0]})

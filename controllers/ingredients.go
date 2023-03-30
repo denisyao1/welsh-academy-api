@@ -18,7 +18,7 @@ func NewIngredientController(service services.IngredientService) IngredientContr
 	return IngredientController{service: service}
 }
 
-func (c *IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
+func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 	var ingredient models.Ingredient
 
 	if err := ctx.BodyParser(&ingredient); err != nil {

@@ -5,6 +5,11 @@ import (
 	"fmt"
 )
 
+var (
+	ErrDuplicateKey       = errors.New("object with the same name already exists")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+)
+
 type ErrValidation interface {
 	Display() interface{}
 	Error() string
@@ -27,5 +32,3 @@ func (v errValidation) Error() string {
 func NewValidationError(field string, description string) ErrValidation {
 	return &errValidation{Field: field, Description: description}
 }
-
-var ErrDuplicateKey = errors.New("object with the same name already exists")
