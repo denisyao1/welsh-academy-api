@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Role int
 
@@ -10,8 +12,9 @@ const (
 )
 
 type BaseModel struct {
-	ID        int32     `gorm:"primarykey" json:"id"`
-	CreatedAt time.Time `json:"-"`
+	ID        int       `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`
 }
 
 type Ingredient struct {
@@ -30,5 +33,5 @@ type User struct {
 	BaseModel
 	Username string `gorm:"UniqueIndex" json:"username"`
 	Password string `gorm:"not null"  json:"-"`
-	IsAdmin  bool   `json:"isAdmin"`
+	IsAdmin  bool   `json:"admin"`
 }

@@ -35,18 +35,21 @@ func New(
 }
 
 func (r Router) InitRoutes(app *fiber.App) {
-	app.Get("/health", controller.HealthCheck)
-	app.Post("/ingredients", r.ingredientController.CreateIngredient)
-	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
-	app.Post("/recipes", r.recipeController.CreateRecipe)
-	app.Get("/recipes", r.recipeController.ListRecipes)
 
-	app.Post("/users", r.userController.CreateUser)
+	app.Get("/health", controller.HealthCheck)
 	app.Post("/login", r.userController.Login)
 	app.Get("/logout", r.userController.Logout)
 
+	app.Use(middleware.JwtWare(r.SigningKey, model.RoleUser))
+	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
+	app.Get("/recipes", r.recipeController.ListRecipes)
+	app.Get("/infos", r.userController.GetInfos)
+	app.Patch("/password-change", r.userController.UpdatePassword)
+
 	app.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))
-	app.Get("/infos", r.userController.UserInfos)
+	app.Post("/users", r.userController.Create)
+	app.Post("/ingredients", r.ingredientController.CreateIngredient)
+	app.Post("/recipes", r.recipeController.CreateRecipe)
 
 }
 

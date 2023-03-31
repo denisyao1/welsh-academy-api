@@ -43,6 +43,8 @@ func JwtWare(siginKey string, role model.Role) func(ctx *fiber.Ctx) error {
 		}
 
 		user_role := model.Role(claims["role"].(float64))
+		fmt.Println("role=", role)
+		fmt.Println("user_role=", user_role)
 		if role == model.RoleAdmin && role != user_role {
 			return invalidTokenResponse
 		}

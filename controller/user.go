@@ -17,11 +17,10 @@ type UserController struct {
 }
 
 func NewUserController(service service.UserService) UserController {
-	fmt.Println("service=", service)
 	return UserController{service: service}
 }
 
-func (c UserController) CreateUser(ctx *fiber.Ctx) error {
+func (c UserController) Create(ctx *fiber.Ctx) error {
 	var userSchema schema.CreateUserSchema
 
 	if err := ctx.BodyParser(&userSchema); err != nil {
@@ -44,7 +43,6 @@ func (c UserController) CreateUser(ctx *fiber.Ctx) error {
 			return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": message})
 		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(user)
@@ -60,10 +58,7 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 	// create token
 	token, err := c.service.CreateAccessToken(loginSchema)
 	if err != nil {
-		if errors.Is(err, exception.ErrInvalidCredentials) {
-			return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
-		}
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.errorHandlerHelper(err, ctx)
 	}
 
 	// create cookie
@@ -86,11 +81,58 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "logout successful"})
 }
 
-// @TODO: I have to complete or remove this fonction
-func (c UserController) UserInfos(ctx *fiber.Ctx) error {
+func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
 	if err != nil {
-		ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "invalid or expired token"})
+		ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Missing or malformed JWT"})
 	}
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"userID": userID})
+	user, err := c.service.GetInfos(userID)
+	if err != nil {
+		c.errorHandlerHelper(err, ctx)
+	}
+	return ctx.Status(fiber.StatusOK).JSON(user)
+}
+
+func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
+	//get user id
+	userID, err := c.getUserID(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"message": "Missing or malformed JWT"})
+	}
+
+	var pwdSchema schema.PasswordSchema
+
+	// get password schema
+	if err = ctx.BodyParser(&pwdSchema); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "can't read request body"})
+	}
+
+	//update password
+	if err = c.service.UpdatePaswword(userID, pwdSchema); err != nil {
+		return c.errorHandlerHelper(err, ctx)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "password update successful"})
+}
+
+func (c UserController) getUserID(ctx *fiber.Ctx) (int, error) {
+	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
+	return userID, err
+}
+
+func (c UserController) errorHandlerHelper(err error, ctx *fiber.Ctx) error {
+	if errors.Is(err, exception.ErrInvalidPassword) || errors.Is(err, exception.ErrPasswordSame) {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	if errors.Is(err, exception.ErrRecordNotFound) {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user " + err.Error()})
+	}
+
+	if errors.Is(err, exception.ErrInvalidCredentials) {
+		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
+	}
+
+	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 }

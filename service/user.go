@@ -18,6 +18,8 @@ type UserService interface {
 	validateCredentials(loginSchema schema.LoginSchema) (model.User, error)
 	CreateUser(userSchema schema.CreateUserSchema) (model.User, error)
 	CreateAccessToken(loginSchema schema.LoginSchema) (string, error)
+	UpdatePaswword(userID int, newPwd schema.PasswordSchema) error
+	GetInfos(userID int) (model.User, error)
 }
 
 type userService struct {
@@ -89,12 +91,12 @@ func (s userService) validateCredentials(loginSchema schema.LoginSchema) (model.
 	}
 
 	// username must be at least 3 characters long; password at least 4 characters long
-	if len([]rune(loginSchema.Username)) < 3 || len([]rune(loginSchema.Username)) < 4 {
+	if len([]rune(loginSchema.Username)) < 3 || len([]rune(loginSchema.Pasword)) < 4 {
 		return user, exception.ErrInvalidCredentials
 	}
 
 	user.Username = loginSchema.Username
-	err := s.repo.GetUserByUsername(&user)
+	err := s.repo.GetByUsername(&user)
 	if err != nil {
 		return user, err
 	}
@@ -141,4 +143,43 @@ func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, 
 	}
 
 	return encodedToken, nil
+}
+
+func (s userService) UpdatePaswword(userID int, newPwdSchema schema.PasswordSchema) error {
+	//check if password is valid
+	if newPwdSchema.Password == "" || len([]rune(newPwdSchema.Password)) < 4 {
+		return exception.ErrInvalidPassword
+	}
+
+	// retrieve user from database
+	var user model.User
+	user.ID = userID
+	err := s.repo.GetByID(&user)
+	if err != nil {
+		return err
+	}
+
+	if user.ID == 0 {
+		return exception.ErrRecordNotFound
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(newPwdSchema.Password))
+	if err == nil {
+		return exception.ErrPasswordSame
+	}
+
+	hash, hashErr := bcrypt.GenerateFromPassword([]byte(newPwdSchema.Password), 10)
+	if hashErr != nil {
+		return hashErr
+	}
+
+	user.Password = string(hash)
+
+	return s.repo.UpdatePassword(&user)
+}
+
+func (s userService) GetInfos(userID int) (model.User, error) {
+	var user model.User
+	user.ID = userID
+	err := s.repo.GetByID(&user)
+	return user, err
 }

@@ -7,7 +7,7 @@ type IngredientQuerySchema struct {
 type CreateUserSchema struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	IsAdmin  bool   `json:"isAdmin"`
+	IsAdmin  bool   `json:"admin"`
 }
 
 type LoginSchema struct {
@@ -15,6 +15,6 @@ type LoginSchema struct {
 	Pasword  string `json:"password"`
 }
 
-type UpdatePasswordSchema struct {
-	Pasword string `json:"password"`
+type PasswordSchema struct {
+	Password string `json:"password"`
 }
