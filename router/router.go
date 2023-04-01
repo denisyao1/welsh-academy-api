@@ -7,8 +7,6 @@ import (
 	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/denisyao1/welsh-academy-api/middleware"
 	"github.com/denisyao1/welsh-academy-api/model"
-
-	// "github.com/gofiber/fiber/middleware"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -36,20 +34,27 @@ func New(
 
 func (r Router) InitRoutes(app *fiber.App) {
 
-	app.Get("/health", controller.HealthCheck)
-	app.Post("/login", r.userController.Login)
-	app.Get("/logout", r.userController.Logout)
+	api := app.Group("/api/v1")
 
-	app.Use(middleware.JwtWare(r.SigningKey, model.RoleUser))
-	app.Get("/ingredients", r.ingredientController.ListAllIngredients)
-	app.Get("/recipes", r.recipeController.ListRecipes)
-	app.Get("/infos", r.userController.GetInfos)
-	app.Patch("/password-change", r.userController.UpdatePassword)
+	// routes thant required no auth
+	api.Get("/health", controller.HealthCheck)
+	api.Post("/login", r.userController.Login)
+	api.Get("/logout", r.userController.Logout)
 
-	app.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))
-	app.Post("/users", r.userController.Create)
-	app.Post("/ingredients", r.ingredientController.CreateIngredient)
-	app.Post("/recipes", r.recipeController.CreateRecipe)
+	// required user auth routes
+	api.Use(middleware.JwtWare(r.SigningKey, model.RoleUser))
+	api.Get("/ingredients", r.ingredientController.ListAllIngredients)
+	api.Get("/recipes", r.recipeController.ListRecipes)
+	api.Post("/recipes/:id/flag-unflag", r.recipeController.FlagOrUnflag)
+	api.Get("/recipes/my-favorites", r.recipeController.ListUserFavorites)
+	api.Get("/my-infos", r.userController.GetInfos)
+	api.Patch("/password-change", r.userController.UpdatePassword)
+
+	// required admin auth routes
+	api.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))
+	api.Post("/users", r.userController.Create)
+	api.Post("/ingredients", r.ingredientController.CreateIngredient)
+	api.Post("/recipes", r.recipeController.CreateRecipe)
 
 }
 

@@ -14,6 +14,8 @@ type RecipeService interface {
 	Create(recipe *model.Recipe) error
 	transform(recipe *model.Recipe) []error
 	ListAllPossible(ingredientNames []string) ([]model.Recipe, error)
+	AddRemoveFavorite(userID int, recipeID int) (string, error)
+	FindUserFavorites(userID int) ([]model.Recipe, error)
 }
 
 type recipeService struct {
@@ -110,4 +112,33 @@ func (s recipeService) ListAllPossible(ingredientNames []string) ([]model.Recipe
 	}
 
 	return s.recipeRepo.FindAllContainging(ingredientNames)
+}
+
+func (s recipeService) AddRemoveFavorite(userID int, recipeID int) (string, error) {
+	// check if recipe existe in the DB
+	_, err := s.recipeRepo.GetByID(recipeID)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if recipe is already in user favorites
+	exist, err := s.recipeRepo.IsInUserFavorites(userID, recipeID)
+	if err != nil {
+		return "", err
+	}
+
+	message := "recipe added to favorites"
+	if exist {
+		// remove recipe from user favorites
+		err = s.recipeRepo.DeleteFromFavorites(userID, recipeID)
+		message = "recipe removed from favorites"
+	} else {
+		err = s.recipeRepo.AddToFavorites(userID, recipeID)
+	}
+
+	return message, err
+}
+
+func (s recipeService) FindUserFavorites(userID int) ([]model.Recipe, error) {
+	return s.recipeRepo.FindFavorites(userID)
 }

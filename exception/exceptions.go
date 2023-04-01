@@ -11,7 +11,7 @@ var (
 	ErrInvalidPassword    = errors.New("password is required and must be at leat 4 characters long")
 	ErrRecordNotFound     = errors.New("not found")
 	ErrPasswordSame       = errors.New("password isn't new")
-	// gorm.ErrRecordNotFound
+	ErrMalFormedJWT       = errors.New("missed or malformed JWT")
 )
 
 type ErrValidation interface {

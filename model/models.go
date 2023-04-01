@@ -4,13 +4,6 @@ import (
 	"time"
 )
 
-type Role int
-
-const (
-	RoleAdmin Role = iota + 1
-	RoleUser
-)
-
 type BaseModel struct {
 	ID        int       `gorm:"primarykey" json:"id"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`
@@ -31,7 +24,13 @@ type Recipe struct {
 
 type User struct {
 	BaseModel
-	Username string `gorm:"UniqueIndex" json:"username"`
-	Password string `gorm:"not null"  json:"-"`
-	IsAdmin  bool   `json:"admin"`
+	Username string   `gorm:"UniqueIndex" json:"username"`
+	Password string   `gorm:"not null"  json:"-"`
+	IsAdmin  bool     `json:"admin"`
+	Recipes  []Recipe `gorm:"many2many:user_favorites" json:"-"`
+}
+
+type UserFavorite struct {
+	UserID   int
+	RecipeID int
 }

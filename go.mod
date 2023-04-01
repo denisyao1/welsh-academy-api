@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/gofiber/fiber/v2 v2.43.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.7.0
@@ -13,14 +14,8 @@ require (
 )
 
 require (
-	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.0.0-rc.1 // indirect
-)
-
-require (
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofiber/jwt/v3 v3.3.7
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect

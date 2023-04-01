@@ -11,6 +11,7 @@ import (
 	"github.com/denisyao1/welsh-academy-api/router"
 	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -36,6 +37,8 @@ func main() {
 	router := router.New(ingredienController, recipeController, userController, os.Getenv("JWT_SECRET"))
 
 	app := fiber.New()
+
+	app.Use(logger.New())
 
 	router.InitRoutes(app)
 

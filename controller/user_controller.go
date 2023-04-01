@@ -13,6 +13,7 @@ import (
 )
 
 type UserController struct {
+	BaseController
 	service service.UserService
 }
 
@@ -24,15 +25,15 @@ func (c UserController) Create(ctx *fiber.Ctx) error {
 	var userSchema schema.CreateUserSchema
 
 	if err := ctx.BodyParser(&userSchema); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to read request body"})
+		return ctx.Status(BadRequest).JSON(Map{"error": "Failed to read request body"})
 	}
 	validationErrs := c.service.ValidateUserCreation(userSchema)
 
 	if validationErrs != nil {
 		if len(validationErrs) == 1 {
-			return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": validationErrs[0]})
+			return ctx.Status(BadRequest).JSON(Map{"error": validationErrs[0]})
 		}
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"errors": validationErrs})
+		return ctx.Status(BadRequest).JSON(Map{"errors": validationErrs})
 	}
 
 	user, err := c.service.CreateUser(userSchema)
@@ -40,9 +41,9 @@ func (c UserController) Create(ctx *fiber.Ctx) error {
 	if err != nil {
 		if errors.Is(err, exception.ErrDuplicateKey) {
 			message := fmt.Sprintf("username '%s' already exists.", user.Username)
-			return ctx.Status(fiber.StatusConflict).JSON(fiber.Map{"error": message})
+			return ctx.Status(Conflict).JSON(Map{"error": message})
 		}
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.HandleUnExpetedError(err, ctx)
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(user)
@@ -52,7 +53,7 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 	// get request body
 	var loginSchema schema.LoginSchema
 	if err := ctx.BodyParser(&loginSchema); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to read request body"})
+		return ctx.Status(BadRequest).JSON(Map{"error": "Failed to read request body"})
 	}
 
 	// create token
@@ -73,39 +74,41 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 	// set cookie
 	ctx.Cookie(&jwt_cookie)
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "login successful"})
+	return ctx.Status(OK).JSON(Map{"message": "login successful"})
 }
 
 func (c UserController) Logout(ctx *fiber.Ctx) error {
 	ctx.ClearCookie("jwt")
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "logout successful"})
+	return ctx.Status(OK).JSON(Map{"message": "logout successful"})
 }
 
 func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
 	if err != nil {
-		ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"message": "Missing or malformed JWT"})
+		ctx.Status(Unauthorized).JSON(Map{"message": "Missing or malformed JWT"})
 	}
+
 	user, err := c.service.GetInfos(userID)
 	if err != nil {
 		c.errorHandlerHelper(err, ctx)
 	}
+
 	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
 func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 	//get user id
-	userID, err := c.getUserID(ctx)
+	userID, err := c.GetConnectedUserID(ctx)
 	if err != nil {
-		return ctx.Status(fiber.StatusUnauthorized).
-			JSON(fiber.Map{"message": "Missing or malformed JWT"})
+		return ctx.Status(Unauthorized).
+			JSON(Map{"message": "Missing or malformed JWT"})
 	}
 
 	var pwdSchema schema.PasswordSchema
 
 	// get password schema
 	if err = ctx.BodyParser(&pwdSchema); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "can't read request body"})
+		return ctx.Status(BadRequest).JSON(Map{"error": "can't read request body"})
 	}
 
 	//update password
@@ -113,12 +116,7 @@ func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 		return c.errorHandlerHelper(err, ctx)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "password update successful"})
-}
-
-func (c UserController) getUserID(ctx *fiber.Ctx) (int, error) {
-	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
-	return userID, err
+	return ctx.Status(OK).JSON(Map{"message": "password update successful"})
 }
 
 func (c UserController) errorHandlerHelper(err error, ctx *fiber.Ctx) error {
