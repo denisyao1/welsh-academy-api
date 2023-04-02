@@ -10,7 +10,7 @@ import (
 
 type RecipeRepository interface {
 	Create(receipe *model.Recipe) error
-	CheckIfNotCreated(recipe model.Recipe) (bool, error)
+	IsNotCreated(recipe model.Recipe) (bool, error)
 	FindAll() ([]model.Recipe, error)
 	FindAllContainging(ingredientNames []string) ([]model.Recipe, error)
 	GetByID(recipeID int) (model.Recipe, error)
@@ -28,10 +28,10 @@ func NewGormRecipeRepository(db *gorm.DB) RecipeRepository {
 	return &gormRecipeRepo{db: db}
 }
 
-func (r gormRecipeRepo) CheckIfNotCreated(recipe model.Recipe) (bool, error) {
+func (r gormRecipeRepo) IsNotCreated(recipe model.Recipe) (bool, error) {
 	var recipeB model.Recipe
 	err := r.db.Where("name=?", recipe.Name).First(&recipeB).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return true, nil
 	}
 	return false, err
@@ -73,7 +73,7 @@ func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]model.Re
 func (r gormRecipeRepo) GetByID(recipeID int) (model.Recipe, error) {
 	var recipe model.Recipe
 	err := r.db.Where("id = ?", recipeID).First(&recipe).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return recipe, exception.ErrRecordNotFound
 	}
 	return recipe, err
@@ -84,7 +84,7 @@ func (r gormRecipeRepo) IsInUserFavorites(userID int, recipeID int) (bool, error
 	err := r.db.Table("user_favorites").
 		Where("user_id = ? and recipe_id = ?", userID, recipeID).
 		First(&userFavorite).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}
 	return true, err

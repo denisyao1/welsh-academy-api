@@ -1,8 +1,9 @@
 version: "3.9"
 services:
   api:
-    container_name: welsh-academy
+    container_name: welsh-academy-api
     build: .
+    image: welsh-academy-api
     ports:
       - "3000:3000"
     restart: on-failure

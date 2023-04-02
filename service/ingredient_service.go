@@ -29,10 +29,8 @@ func (s ingredientService) Validate(ingredient model.Ingredient) exception.ErrVa
 }
 
 func (s ingredientService) Create(ingredient *model.Ingredient) error {
-
 	// Check if ingredient is already in the database
-	ok, err := s.repo.CheckIfNotCreated(*ingredient)
-
+	ok, err := s.repo.IsNotCreated(*ingredient)
 	if err != nil {
 		return err
 	}

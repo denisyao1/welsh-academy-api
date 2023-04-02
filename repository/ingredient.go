@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/denisyao1/welsh-academy-api/model"
 	"gorm.io/gorm"
 )
@@ -8,7 +10,7 @@ import (
 type IngredientRepository interface {
 	Create(ingredient *model.Ingredient) error
 	FindAll() ([]model.Ingredient, error)
-	CheckIfNotCreated(ingredient model.Ingredient) (bool, error)
+	IsNotCreated(ingredient model.Ingredient) (bool, error)
 	FindNamed(names []string) ([]model.Ingredient, error)
 }
 
@@ -38,21 +40,22 @@ func (r gormIngredientRepo) FindAll() ([]model.Ingredient, error) {
 	return ingredients, nil
 }
 
-func (r gormIngredientRepo) CheckIfNotCreated(ingredient model.Ingredient) (bool, error) {
+func (r gormIngredientRepo) IsNotCreated(ingredient model.Ingredient) (bool, error) {
 	var ingredientB model.Ingredient
-	result := r.db.Where("name=?", ingredient.Name).Find(&ingredientB)
-	if result.Error != nil {
-		return false, result.Error
+	err := r.db.Where("name=?", ingredient.Name).First(&ingredientB).Error
+
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return true, nil
 	}
-	return result.RowsAffected == 0, nil
+	return false, err
 }
 
 func (r gormIngredientRepo) FindNamed(names []string) ([]model.Ingredient, error) {
 	var ingredients []model.Ingredient
 
-	result := r.db.Where("name IN ?", names).Find(&ingredients)
-	if result.Error != nil {
-		return nil, result.Error
+	err := r.db.Where("name IN ?", names).Find(&ingredients).Error
+	if err != nil {
+		return nil, err
 	}
 
 	return ingredients, nil

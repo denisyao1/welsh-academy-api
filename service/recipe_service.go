@@ -94,7 +94,7 @@ func (s recipeService) transform(recipe *model.Recipe) []error {
 }
 
 func (s recipeService) Create(recipe *model.Recipe) error {
-	ok, err := s.recipeRepo.CheckIfNotCreated(*recipe)
+	ok, err := s.recipeRepo.IsNotCreated(*recipe)
 
 	if err != nil {
 		return err

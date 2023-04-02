@@ -32,13 +32,11 @@ func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 
 	err := c.service.Create(&ingredient)
 	if err != nil {
-
 		if errors.Is(err, exception.ErrDuplicateKey) {
 			message := fmt.Sprintf("An ingredient named '%s' already exists.", ingredient.Name)
 			return ctx.Status(Conflict).JSON(Map{"error": message})
 		}
 		return c.HandleUnExpetedError(err, ctx)
-
 	}
 
 	return ctx.Status(Created).JSON(ingredient)

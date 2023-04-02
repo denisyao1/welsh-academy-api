@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -20,6 +22,7 @@ type UserService interface {
 	CreateAccessToken(loginSchema schema.LoginSchema) (string, error)
 	UpdatePaswword(userID int, newPwd schema.PasswordSchema) error
 	GetInfos(userID int) (model.User, error)
+	CreateDefaultAdmin() error
 }
 
 type userService struct {
@@ -60,7 +63,7 @@ func (s userService) CreateUser(userSchema schema.CreateUserSchema) (model.User,
 	user := model.User{Username: userSchema.Username, IsAdmin: userSchema.IsAdmin}
 
 	// Check if username is already used in DB
-	ok, checkErr := s.repo.CheckIfNotCreated(user)
+	ok, checkErr := s.repo.IsNotCreated(user)
 
 	if checkErr != nil {
 		return user, checkErr
@@ -182,4 +185,42 @@ func (s userService) GetInfos(userID int) (model.User, error) {
 	user.ID = userID
 	err := s.repo.GetByID(&user)
 	return user, err
+}
+
+func (s userService) CreateDefaultAdmin() error {
+	var admin model.User
+	admin.Username = "admin"
+	admin.IsAdmin = true
+
+	// check if admin is already created
+	err := s.repo.GetByUsername(&admin)
+
+	if err != nil && !errors.Is(err, exception.ErrRecordNotFound) {
+		// Unexpected error occured exist
+		log.Fatalln("Unexpected error : ", err.Error())
+		log.Fatal("Failed to create default admin user")
+	}
+
+	if admin.ID != 0 {
+		log.Println("Default admin alredy exists")
+		return nil
+	}
+
+	// create hash for admin password password
+	password := "admin"
+	hash, hashErr := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if hashErr != nil {
+		log.Fatalln("Unexpected error : ", err.Error())
+		log.Fatal("Failed to create default admin user")
+	}
+
+	admin.Password = string(hash)
+	err = s.repo.Create(&admin)
+	if err != nil {
+		log.Fatalln("Unexpected error : ", err.Error())
+		log.Fatal("Failed to create default admin user")
+	}
+
+	log.Println("default admin user created successfully")
+	return nil
 }

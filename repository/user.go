@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	CheckIfNotCreated(user model.User) (bool, error)
+	IsNotCreated(user model.User) (bool, error)
 	Create(user *model.User) error
 	GetByUsername(user *model.User) error
 	GetByID(user *model.User) error
@@ -26,7 +26,7 @@ func (r userRepo) Create(user *model.User) error {
 	return r.db.Create(user).Error
 }
 
-func (r userRepo) CheckIfNotCreated(user model.User) (bool, error) {
+func (r userRepo) IsNotCreated(user model.User) (bool, error) {
 	var userB model.User
 	result := r.db.Where("username=?", user.Username).Find(&userB)
 	if result.Error != nil {
