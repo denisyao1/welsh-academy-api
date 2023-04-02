@@ -6,12 +6,21 @@ import (
 	"github.com/denisyao1/welsh-academy-api/repository"
 )
 
+// IngredientService contains business logic to save and retreive ingredients.
 type IngredientService interface {
+	// Validate validates user input
 	Validate(ingredient model.Ingredient) exception.ErrValidation
+
+	// Create adds new ingredient to database.
+	//
+	// It returns exception.ErrDuplicateKey if the recipe name is alredy used.
 	Create(ingredient *model.Ingredient) error
+
+	// FindAll returns all the ingredients from the database.
 	FindAll() ([]model.Ingredient, error)
 }
 
+// NewIngredientService returns new IngredientService.
 func NewIngredientService(repository repository.IngredientRepository) IngredientService {
 	return &ingredientService{repo: repository}
 }
@@ -24,7 +33,7 @@ func (s ingredientService) Validate(ingredient model.Ingredient) exception.ErrVa
 	if ingredient.Name == "" {
 		return exception.NewValidationError("name", "the name is reqired")
 	}
-	return nil
+	return exception.ErrValidation{}
 
 }
 

@@ -14,25 +14,25 @@ var (
 	ErrMalFormedJWT       = errors.New("missed or malformed JWT")
 )
 
-type ErrValidation interface {
-	Display() interface{}
-	Error() string
-}
+// type ErrValidation interface {
+// 	Display() interface{}
+// 	Error() string
+// }
 
-type errValidation struct {
+type ErrValidation struct {
 	Field       string `json:"field"`
 	Description string `json:"description"`
 }
 
-func (v errValidation) Display() interface{} {
+// func (v ErrValidation) Display() interface{} {
 
-	return v
-}
+// 	return v
+// }
 
-func (v errValidation) Error() string {
+func (v ErrValidation) Error() string {
 	return fmt.Sprintf("ValidationErr: {field:%s, description:%s}", v.Field, v.Description)
 }
 
 func NewValidationError(field string, description string) ErrValidation {
-	return &errValidation{Field: field, Description: description}
+	return ErrValidation{Field: field, Description: description}
 }

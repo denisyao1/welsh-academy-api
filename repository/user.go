@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/denisyao1/welsh-academy-api/exception"
 	"github.com/denisyao1/welsh-academy-api/model"
 	"gorm.io/gorm"
@@ -28,16 +30,16 @@ func (r userRepo) Create(user *model.User) error {
 
 func (r userRepo) IsNotCreated(user model.User) (bool, error) {
 	var userB model.User
-	result := r.db.Where("username=?", user.Username).Find(&userB)
-	if result.Error != nil {
-		return false, result.Error
+	err := r.db.Where("username=?", user.Username).Find(&userB).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
 	}
-	return result.RowsAffected == 0, nil
+	return true, err
 }
 
 func (r userRepo) GetByUsername(user *model.User) error {
 	err := r.db.Where("username=?", user.Username).First(user).Error
-	if err == gorm.ErrRecordNotFound {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return exception.ErrRecordNotFound
 	}
 	return err
@@ -45,7 +47,7 @@ func (r userRepo) GetByUsername(user *model.User) error {
 
 func (r userRepo) GetByID(user *model.User) error {
 	err := r.db.Where("id=?", user.ID).First(user).Error
-	if err == gorm.ErrRecordNotFound {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return exception.ErrRecordNotFound
 	}
 	return err
@@ -53,7 +55,7 @@ func (r userRepo) GetByID(user *model.User) error {
 
 func (r userRepo) UpdatePassword(user *model.User) error {
 	err := r.db.Model(user).Update("password", user.Password).Error
-	if err == gorm.ErrRecordNotFound {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		return exception.ErrRecordNotFound
 	}
 	return err

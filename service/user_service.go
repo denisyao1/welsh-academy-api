@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"log"
-	"os"
 	"strconv"
 	"time"
 
@@ -16,24 +15,44 @@ import (
 )
 
 type UserService interface {
-	ValidateUserCreation(userSchema schema.CreateUserSchema) []error
-	validateCredentials(loginSchema schema.LoginSchema) (model.User, error)
-	CreateUser(userSchema schema.CreateUserSchema) (model.User, error)
-	CreateAccessToken(loginSchema schema.LoginSchema) (string, error)
-	UpdatePaswword(userID int, newPwd schema.PasswordSchema) error
+	ValidateUserCreation(userSchema schema.User) []error
+
+	// validateCredentials checks if login informations are valid
+	validateCredentials(loginSchema schema.Login) (model.User, error)
+
+	// CreateUser create new user
+	CreateUser(userSchema schema.User) (model.User, error)
+
+	// CreateAccessToken return new access token
+	CreateAccessToken(loginSchema schema.Login) (string, error)
+
+	// UpdatePaswword Updates connected user password.
+	//
+	// if it receives bad input, it can returns :
+	//		- exception.ErrInvalidPassword
+	//		- exception.ErrRecordNotFound
+	//      - exception.ErrPasswordSame
+	UpdatePaswword(userID int, newPwd schema.Password) error
+
+	// GetInfos returns the connected user model object.
+	//
+	//it returns exception.ErrRecordNotFound if user is not found
 	GetInfos(userID int) (model.User, error)
+
+	// CreateDefaultAdmin adds default admin user to DB
 	CreateDefaultAdmin() error
 }
 
 type userService struct {
-	repo repository.UserRepository
+	repo       repository.UserRepository
+	jwt_secret string
 }
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserService(repo repository.UserRepository, jwt_secret string) UserService {
+	return &userService{repo: repo, jwt_secret: jwt_secret}
 }
 
-func (s userService) ValidateUserCreation(userSchema schema.CreateUserSchema) []error {
+func (s userService) ValidateUserCreation(userSchema schema.User) []error {
 	var newErrValidation = exception.NewValidationError
 	var errs []error
 
@@ -58,7 +77,7 @@ func (s userService) ValidateUserCreation(userSchema schema.CreateUserSchema) []
 	return errs
 }
 
-func (s userService) CreateUser(userSchema schema.CreateUserSchema) (model.User, error) {
+func (s userService) CreateUser(userSchema schema.User) (model.User, error) {
 
 	user := model.User{Username: userSchema.Username, IsAdmin: userSchema.IsAdmin}
 
@@ -86,15 +105,15 @@ func (s userService) CreateUser(userSchema schema.CreateUserSchema) (model.User,
 	return user, err
 }
 
-func (s userService) validateCredentials(loginSchema schema.LoginSchema) (model.User, error) {
+func (s userService) validateCredentials(loginSchema schema.Login) (model.User, error) {
 	var user model.User
 
-	if loginSchema.Username == "" || loginSchema.Pasword == "" {
+	if loginSchema.Username == "" || loginSchema.Password == "" {
 		return user, exception.ErrInvalidCredentials
 	}
 
 	// username must be at least 3 characters long; password at least 4 characters long
-	if len([]rune(loginSchema.Username)) < 3 || len([]rune(loginSchema.Pasword)) < 4 {
+	if len([]rune(loginSchema.Username)) < 3 || len([]rune(loginSchema.Password)) < 4 {
 		return user, exception.ErrInvalidCredentials
 	}
 
@@ -108,7 +127,7 @@ func (s userService) validateCredentials(loginSchema schema.LoginSchema) (model.
 		return user, exception.ErrInvalidCredentials
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginSchema.Pasword))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginSchema.Password))
 
 	if err != nil {
 		return user, exception.ErrInvalidCredentials
@@ -117,7 +136,7 @@ func (s userService) validateCredentials(loginSchema schema.LoginSchema) (model.
 	return user, nil
 }
 
-func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, error) {
+func (s userService) CreateAccessToken(loginSchema schema.Login) (string, error) {
 	// validate user credentials
 	user, err := s.validateCredentials(loginSchema)
 	if err != nil {
@@ -140,7 +159,7 @@ func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// Generate encoded token and send it as response.
-	encodedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	encodedToken, err := token.SignedString([]byte(s.jwt_secret))
 	if err != nil {
 		return "", err
 	}
@@ -148,7 +167,7 @@ func (s userService) CreateAccessToken(loginSchema schema.LoginSchema) (string, 
 	return encodedToken, nil
 }
 
-func (s userService) UpdatePaswword(userID int, newPwdSchema schema.PasswordSchema) error {
+func (s userService) UpdatePaswword(userID int, newPwdSchema schema.Password) error {
 	//check if password is valid
 	if newPwdSchema.Password == "" || len([]rune(newPwdSchema.Password)) < 4 {
 		return exception.ErrInvalidPassword

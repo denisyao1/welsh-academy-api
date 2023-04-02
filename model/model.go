@@ -5,14 +5,14 @@ import (
 )
 
 type BaseModel struct {
-	ID        int       `gorm:"primarykey" json:"id"`
+	ID        int       `gorm:"primarykey" json:"id" example:"1"`
 	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`
 	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`
 }
 
 type Ingredient struct {
 	BaseModel
-	Name string `gorm:"uniqueIndex" json:"name"`
+	Name string `gorm:"uniqueIndex" json:"name" example:"Tomato"`
 }
 
 type Recipe struct {
@@ -23,11 +23,13 @@ type Recipe struct {
 }
 
 type User struct {
-	BaseModel
-	Username string   `gorm:"UniqueIndex;not null" json:"username"`
-	Password string   `gorm:"not null"  json:"-"`
-	IsAdmin  bool     `json:"admin"`
-	Recipes  []Recipe `gorm:"many2many:user_favorites" json:"-"`
+	ID        int       `gorm:"primarykey" json:"-"`
+	Username  string    `gorm:"UniqueIndex;not null" json:"username"`
+	Password  string    `gorm:"not null"  json:"-"`
+	IsAdmin   bool      `json:"admin"`
+	Recipes   []Recipe  `gorm:"many2many:user_favorites" json:"-"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"-"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"-"`
 }
 
 type UserFavorite struct {

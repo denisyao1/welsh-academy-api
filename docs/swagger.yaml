@@ -1,0 +1,443 @@
+basePath: /api/v1
+definitions:
+  controller.ErrMessage:
+    properties:
+      error:
+        type: string
+    type: object
+  controller.Message:
+    properties:
+      message:
+        type: string
+    type: object
+  exception.ErrValidation:
+    properties:
+      description:
+        type: string
+      field:
+        type: string
+    type: object
+  model.Ingredient:
+    properties:
+      id:
+        example: 1
+        type: integer
+      name:
+        example: Tomato
+        type: string
+    type: object
+  model.Recipe:
+    properties:
+      id:
+        example: 1
+        type: integer
+      ingredients:
+        items:
+          $ref: '#/definitions/model.Ingredient'
+        type: array
+      making:
+        type: string
+      name:
+        type: string
+    type: object
+  schema.Ingredient:
+    properties:
+      name:
+        type: string
+    type: object
+  schema.Login:
+    properties:
+      password:
+        example: password
+        minLength: 4
+        type: string
+        x-order: "2"
+      username:
+        example: username
+        minLength: 3
+        type: string
+        x-order: "1"
+    type: object
+  schema.Password:
+    properties:
+      password:
+        minLength: 4
+        type: string
+    type: object
+  schema.Recipe:
+    properties:
+      ingredients:
+        items:
+          $ref: '#/definitions/schema.Ingredient'
+        type: array
+        x-order: "2"
+      name:
+        type: string
+        x-order: "1"
+    type: object
+  schema.User:
+    properties:
+      admin:
+        type: boolean
+        x-order: "3"
+      password:
+        type: string
+        x-order: "2"
+      username:
+        type: string
+        x-order: "1"
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: denisyao@outlook.com
+    name: Denis YAO
+  description: Welsh Academy API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Welsh Academy API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Check Api is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+        "500":
+          description: Internal Server Error
+      summary: Health check
+      tags:
+      - Health
+  /ingredients:
+    get:
+      description: |-
+        List ingredients.
+
+        Require Authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Ingredient'
+            type: array
+        "500":
+          description: Internal Server Error
+      summary: List ingredients
+      tags:
+      - Ingredients
+    post:
+      description: |-
+        Create an ingredient.
+
+        Require Admin Role.
+      parameters:
+      - description: Ingredient object
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.Ingredient'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Ingredient'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/exception.ErrValidation'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Create ingredient
+      tags:
+      - Ingredients
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Get new cookie access token
+      parameters:
+      - description: Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Login
+      tags:
+      - Auth
+  /logout:
+    get:
+      description: Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+      summary: Logout
+      tags:
+      - Auth
+  /recipes:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        List all possible recipes.
+
+        Require Authentication.
+      parameters:
+      - collectionFormat: csv
+        in: query
+        items:
+          type: string
+        name: ingredients
+        type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Recipe'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: List all possible recipes
+      tags:
+      - Recipes
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Create recipe.
+
+        Require Admin Role.
+      parameters:
+      - description: Recipe object
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.Recipe'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Recipe'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Create recipe
+      tags:
+      - Recipes
+  /recipes/{id}/flag-unflag:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Add or remove a recipe to your favorites.
+
+        Require Authentication.
+      parameters:
+      - description: recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Flag or Unflag recipe
+      tags:
+      - Recipes
+  /recipes/favorites:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        list the connected user favorite recipes.
+
+        Require Authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Recipe'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: List favorite recipes
+      tags:
+      - User Profile
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Create user.
+
+        Require Admin Role.
+      parameters:
+      - description: User object
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schema.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Create user
+      tags:
+      - User Management
+  /users/my-infos:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Show connected user informations.
+
+        Require Authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: My infos
+      tags:
+      - User Profile
+  /users/password-change:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Update connected user's password
+
+        Require Authentication
+      parameters:
+      - description: Password
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schema.Password'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/controller.Message'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "500":
+          description: Internal Server Error
+      summary: Update password
+      tags:
+      - User Profile
+swagger: "2.0"

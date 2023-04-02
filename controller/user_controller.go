@@ -12,23 +12,40 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// User controller contains informations and methods to route user related requests.
 type UserController struct {
 	BaseController
 	service service.UserService
 }
 
+// NewUserController creates new user controller
 func NewUserController(service service.UserService) UserController {
 	return UserController{service: service}
 }
 
+//	Create creates new user
+//
+// @Summary      Create user
+// @Description  Create user.
+// @Description
+// @Description  Require Admin Role.
+// @Param request body schema.Login true "User object"
+// @Tags         User Management
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} schema.User
+// @Failure      400 {object} ErrMessage
+// @Failure      401 {object} ErrMessage
+// @Failure      500
+// @Router       /users [post]
 func (c UserController) Create(ctx *fiber.Ctx) error {
-	var userSchema schema.CreateUserSchema
+	var userSchema schema.User
 
 	if err := ctx.BodyParser(&userSchema); err != nil {
-		return ctx.Status(BadRequest).JSON(Map{"error": "Failed to read request body"})
+		return ctx.Status(BadRequest).JSON(NewErrMessage("Failed to read request body"))
 	}
-	validationErrs := c.service.ValidateUserCreation(userSchema)
 
+	validationErrs := c.service.ValidateUserCreation(userSchema)
 	if validationErrs != nil {
 		if len(validationErrs) == 1 {
 			return ctx.Status(BadRequest).JSON(Map{"error": validationErrs[0]})
@@ -49,22 +66,38 @@ func (c UserController) Create(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(user)
 }
 
+//	Login creates new cookie access token
+//
+// @Summary      Login
+// @Description  Get new cookie access token
+// @Param request body schema.Login true "Credentials"
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} Message
+// @Failure      400 {object} ErrMessage
+// @Failure      500
+// @Router       /login [post]
 func (c UserController) Login(ctx *fiber.Ctx) error {
 	// get request body
-	var loginSchema schema.LoginSchema
+	var loginSchema schema.Login
 	if err := ctx.BodyParser(&loginSchema); err != nil {
-		return ctx.Status(BadRequest).JSON(Map{"error": "Failed to read request body"})
+		return ctx.Status(BadRequest).JSON(NewErrMessage("Failed to read request body."))
 	}
 
 	// create token
 	token, err := c.service.CreateAccessToken(loginSchema)
 	if err != nil {
-		return c.errorHandlerHelper(err, ctx)
+		//if err is ErrInvalidCredentials
+		if errors.Is(err, exception.ErrInvalidCredentials) {
+			return ctx.Status(Unauthorized).JSON(NewErrMessage("invalid credentials"))
+		}
+		return c.HandleUnExpetedError(err, ctx)
 	}
 
 	// create cookie
 	jwt_cookie := fiber.Cookie{
-		Name:     "jwt",
+		Name:     "Auth",
 		Value:    token,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HTTPOnly: true,
@@ -77,11 +110,43 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 	return ctx.Status(OK).JSON(Map{"message": "login successful"})
 }
 
+//	Logout Logs out the connected user
+//
+// @Summary      Logout
+// @Description  Logout
+// @Tags         Auth
+// @Produce      json
+// @Success      200 {object} Message
+// @Router       /logout [get]
 func (c UserController) Logout(ctx *fiber.Ctx) error {
-	ctx.ClearCookie("jwt")
+	// create an expired cookie
+	cookie := fiber.Cookie{
+		Name:     "Auth",
+		Value:    "deleted",
+		Expires:  time.Now().Add(-5 * time.Second),
+		HTTPOnly: true,
+		SameSite: "lax",
+	}
+
+	ctx.Cookie(&cookie)
+
 	return ctx.Status(OK).JSON(Map{"message": "logout successful"})
 }
 
+//	GetInfos returns connected user informations
+//
+// @Summary      My infos
+// @Description  Show connected user informations.
+// @Description
+// @Description  Require Authentication.
+// @Tags         User Profile
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} Message
+// @Failure      400 {object} ErrMessage
+// @Failure      401 {object} ErrMessage
+// @Failure      500
+// @Router       /users/my-infos [get]
 func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
 	if err != nil {
@@ -90,47 +155,56 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 
 	user, err := c.service.GetInfos(userID)
 	if err != nil {
-		c.errorHandlerHelper(err, ctx)
+		if errors.Is(err, exception.ErrRecordNotFound) {
+			return ctx.Status(BadRequest).JSON(Map{"error": "user " + err.Error()})
+		}
+		c.HandleUnExpetedError(err, ctx)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
+//	UpdatePassword updates connected user's password
+//
+// @Summary      Update password
+// @Description  Update connected user's password
+// @Description
+// @Description  Require Authentication
+// @Param request body schema.Password true "Password"
+// @Tags         User Profile
+// @Accept       json
+// @Produce      json
+// @Success      200 {object} Message
+// @Failure      400 {object} ErrMessage
+// @Failure      401 {object} ErrMessage
+// @Failure      500
+// @Router       /users/password-change [post]
 func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 	//get user id
 	userID, err := c.GetConnectedUserID(ctx)
 	if err != nil {
 		return ctx.Status(Unauthorized).
-			JSON(Map{"message": "Missing or malformed JWT"})
+			JSON(NewErrMessage("Missing or malformed JWT"))
 	}
 
-	var pwdSchema schema.PasswordSchema
-
-	// get password schema
+	// get password input
+	var pwdSchema schema.Password
 	if err = ctx.BodyParser(&pwdSchema); err != nil {
-		return ctx.Status(BadRequest).JSON(Map{"error": "can't read request body"})
+		return ctx.Status(BadRequest).JSON(NewErrMessage("can't read request body"))
 	}
 
 	//update password
 	if err = c.service.UpdatePaswword(userID, pwdSchema); err != nil {
-		return c.errorHandlerHelper(err, ctx)
+		if errors.Is(err, exception.ErrInvalidPassword) ||
+			errors.Is(err, exception.ErrPasswordSame) {
+			return ctx.Status(BadRequest).JSON(NewErrMessage(err.Error()))
+		}
+		if errors.Is(err, exception.ErrRecordNotFound) {
+			msg := "user " + err.Error()
+			return ctx.Status(BadRequest).JSON(NewErrMessage(msg))
+		}
+		return c.HandleUnExpetedError(err, ctx)
 	}
 
-	return ctx.Status(OK).JSON(Map{"message": "password update successful"})
-}
-
-func (c UserController) errorHandlerHelper(err error, ctx *fiber.Ctx) error {
-	if errors.Is(err, exception.ErrInvalidPassword) || errors.Is(err, exception.ErrPasswordSame) {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-	}
-
-	if errors.Is(err, exception.ErrRecordNotFound) {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "user " + err.Error()})
-	}
-
-	if errors.Is(err, exception.ErrInvalidCredentials) {
-		return ctx.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid credentials"})
-	}
-
-	return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	return ctx.Status(OK).JSON(NewErrMessage("password update successful"))
 }

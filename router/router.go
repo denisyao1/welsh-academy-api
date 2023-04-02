@@ -43,12 +43,12 @@ func (r Router) InitRoutes(app *fiber.App) {
 
 	// required user auth routes
 	api.Use(middleware.JwtWare(r.SigningKey, model.RoleUser))
-	api.Get("/ingredients", r.ingredientController.ListAllIngredients)
+	api.Get("/ingredients", r.ingredientController.ListIngredients)
 	api.Get("/recipes", r.recipeController.ListRecipes)
 	api.Post("/recipes/:id/flag-unflag", r.recipeController.FlagOrUnflag)
-	api.Get("/recipes/my-favorites", r.recipeController.ListUserFavorites)
-	api.Get("/my-infos", r.userController.GetInfos)
-	api.Patch("/password-change", r.userController.UpdatePassword)
+	api.Get("/recipes/favorites", r.recipeController.ListUserFavorites)
+	api.Get("/users/my-infos", r.userController.GetInfos)
+	api.Patch("/users/password-change", r.userController.UpdatePassword)
 
 	// required admin auth routes
 	api.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))

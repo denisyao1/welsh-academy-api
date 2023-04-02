@@ -10,11 +10,23 @@ import (
 )
 
 type RecipeService interface {
+	// Validate validates user inputs.
 	Validate(recipe *model.Recipe) []error
+
+	// Create add new recipe to the database.
 	Create(recipe *model.Recipe) error
+
+	// transform transforms user inputs to recipe database model.
 	transform(recipe *model.Recipe) []error
+
+	// ListAllPossible lists all possible recipes containing at
+	// least one ingredient of the list of ingredients.
 	ListAllPossible(ingredientNames []string) ([]model.Recipe, error)
+
+	// AddRemoveFavorite adds or remove an recipe to user favorites.
 	AddRemoveFavorite(userID int, recipeID int) (string, error)
+
+	// FindUserFavorites lists user favorite recipes.
 	FindUserFavorites(userID int) ([]model.Recipe, error)
 }
 
@@ -23,6 +35,7 @@ type recipeService struct {
 	ingredientRepo repository.IngredientRepository
 }
 
+// NewRecipeService creates new RecipeService.
 func NewRecipeService(recipeRepo repository.RecipeRepository, ingredientRepo repository.IngredientRepository) RecipeService {
 	return &recipeService{recipeRepo: recipeRepo, ingredientRepo: ingredientRepo}
 }
