@@ -19,3 +19,6 @@
 
 # IDES
 .vscode/
+
+# bin
+bin

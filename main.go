@@ -2,25 +2,26 @@ package main
 
 import (
 	"log"
-	"os"
 
+	"github.com/denisyao1/welsh-academy-api/common"
 	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/denisyao1/welsh-academy-api/database"
-	"github.com/denisyao1/welsh-academy-api/initializer"
 	"github.com/denisyao1/welsh-academy-api/repository"
 	"github.com/denisyao1/welsh-academy-api/router"
+	"github.com/denisyao1/welsh-academy-api/schema"
 	"github.com/denisyao1/welsh-academy-api/service"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
-	envErr := initializer.LoadEnvVariables()
-	if envErr != nil {
-		log.Fatal("Failed to load env variable")
-	}
 
-	gormDB := database.NewGormDB()
+	config := common.LoadConfig()
+
+	gormDB := database.NewGormDB(config)
+
+	// migrate database
+	gormDB.Migrate()
 
 	ingredientRepo := repository.NewGormIngredientRepository(gormDB.GetDB())
 	ingredientService := service.NewIngredientService(ingredientRepo)
@@ -34,7 +35,18 @@ func main() {
 	userService := service.NewUserService(userRepo)
 	userController := controller.NewUserController(userService)
 
-	router := router.New(ingredienController, recipeController, userController, os.Getenv("JWT_SECRET"))
+	// create an default admin user
+	var user schema.CreateUserSchema
+	user.Username = "admin"
+	user.Password = "admin"
+	user.IsAdmin = true
+	_, err := userService.CreateUser(user)
+	if err != nil {
+		log.Fatalln("Failed to create default admin user")
+	}
+	log.Println(" Default admin user created")
+
+	router := router.New(ingredienController, recipeController, userController, config.JWT_SECRET)
 
 	app := fiber.New()
 
