@@ -14,20 +14,10 @@ var (
 	ErrMalFormedJWT       = errors.New("missed or malformed token")
 )
 
-// type ErrValidation interface {
-// 	Display() interface{}
-// 	Error() string
-// }
-
 type ErrValidation struct {
 	Field       string `json:"field"`
 	Description string `json:"description"`
 }
-
-// func (v ErrValidation) Display() interface{} {
-
-// 	return v
-// }
 
 func (v ErrValidation) Error() string {
 	return fmt.Sprintf("ValidationErr: {field:%s, description:%s}", v.Field, v.Description)

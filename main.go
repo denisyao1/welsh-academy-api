@@ -25,6 +25,10 @@ import (
 
 // @host localhost:3000
 // @BasePath /api/v1
+
+// @securityDefinitions.apiKey JWT
+// @in cookie
+// @name Auth
 func main() {
 
 	config := common.LoadConfig()

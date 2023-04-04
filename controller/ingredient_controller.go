@@ -34,6 +34,7 @@ func NewIngredientController(service service.IngredientService) IngredientContro
 // @Failure      400 {object} exception.ErrValidation
 // @Failure      409 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /ingredients [post]
 func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 	var ingredient model.Ingredient
@@ -63,12 +64,11 @@ func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 //
 // @Summary      List ingredients
 // @Description  List ingredients.
-// @Description
-// @Description  Require Authentication.
 // @Tags         Ingredients
 // @Produce      json
 // @Success      200 {array} model.Ingredient
 // @Failure      500
+// @Security JWT
 // @Router       /ingredients [get]
 func (c IngredientController) ListIngredients(ctx *fiber.Ctx) error {
 

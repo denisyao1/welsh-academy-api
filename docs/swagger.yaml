@@ -116,10 +116,7 @@ paths:
       - Health
   /ingredients:
     get:
-      description: |-
-        List ingredients.
-
-        Require Authentication.
+      description: List ingredients.
       produces:
       - application/json
       responses:
@@ -131,6 +128,8 @@ paths:
             type: array
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: List ingredients
       tags:
       - Ingredients
@@ -163,6 +162,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: Create ingredient
       tags:
       - Ingredients
@@ -211,10 +212,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: |-
-        List all possible recipes.
-
-        Require Authentication.
+      description: List all possible recipes.
       parameters:
       - collectionFormat: csv
         in: query
@@ -241,6 +239,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: List all possible recipes
       tags:
       - Recipes
@@ -275,6 +275,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: Create recipe
       tags:
       - Recipes
@@ -282,10 +284,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: |-
-        Add or remove a recipe to your favorites.
-
-        Require Authentication.
+      description: Add or remove a recipe to your favorites.
       parameters:
       - description: recipe ID
         in: path
@@ -309,6 +308,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: Flag or Unflag recipe
       tags:
       - Recipes
@@ -316,10 +317,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: |-
-        list the connected user favorite recipes.
-
-        Require Authentication.
+      description: list the connected user favorite recipes.
       produces:
       - application/json
       responses:
@@ -339,6 +337,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: List favorite recipes
       tags:
       - User Profile
@@ -374,6 +374,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: Create user
       tags:
       - User Management
@@ -381,10 +383,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: |-
-        Show connected user informations.
-
-        Require Authentication.
+      description: Show connected user informations.
       produces:
       - application/json
       responses:
@@ -402,6 +401,8 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: My infos
       tags:
       - User Profile
@@ -409,10 +410,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: |-
-        Update connected user's password
-
-        Require Authentication
+      description: Update connected user's password
       parameters:
       - description: Password
         in: body
@@ -437,7 +435,14 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
+      security:
+      - JWT: []
       summary: Update password
       tags:
       - User Profile
+securityDefinitions:
+  JWT:
+    in: cookie
+    name: Auth
+    type: apiKey
 swagger: "2.0"

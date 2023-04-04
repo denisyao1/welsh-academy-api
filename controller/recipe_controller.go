@@ -36,6 +36,7 @@ func NewRecipeController(service service.RecipeService) RecipeController {
 // @Failure      400 {object} ErrMessage || {array} exception.ErrValidation
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /recipes [post]
 func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 	var recipe model.Recipe
@@ -68,8 +69,6 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 //
 // @Summary      List all possible recipes
 // @Description  List all possible recipes.
-// @Description
-// @Description  Require Authentication.
 // @Param 		 ingredients   query  schema.IngredientQuery false "ingredients"
 // @Tags         Recipes
 // @Accept       json
@@ -78,6 +77,7 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /recipes [get]
 func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
 	ingredientQuery := new(schema.IngredientQuery)
@@ -99,8 +99,6 @@ func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
 //
 // @Summary      Flag or Unflag recipe
 // @Description  Add or remove a recipe to your favorites.
-// @Description
-// @Description  Require Authentication.
 // @Param 		 id   path  int true "recipe ID"
 // @Tags         Recipes
 // @Accept       json
@@ -109,6 +107,7 @@ func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /recipes/{id}/flag-unflag [post]
 func (c RecipeController) FlagOrUnflag(ctx *fiber.Ctx) error {
 	// get userID
@@ -139,8 +138,6 @@ func (c RecipeController) FlagOrUnflag(ctx *fiber.Ctx) error {
 //
 // @Summary      List favorite recipes
 // @Description  list the connected user favorite recipes.
-// @Description
-// @Description  Require Authentication.
 // @Tags         User Profile
 // @Accept       json
 // @Produce      json
@@ -148,6 +145,7 @@ func (c RecipeController) FlagOrUnflag(ctx *fiber.Ctx) error {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /recipes/favorites [get]
 func (c RecipeController) ListUserFavorites(ctx *fiber.Ctx) error {
 	// get userID

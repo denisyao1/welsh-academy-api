@@ -48,7 +48,12 @@ const docTemplate = `{
         },
         "/ingredients": {
             "get": {
-                "description": "List ingredients.\n\nRequire Authentication.",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "List ingredients.",
                 "produces": [
                     "application/json"
                 ],
@@ -72,6 +77,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Create an ingredient.\n\nRequire Admin Role.",
                 "produces": [
                     "application/json"
@@ -181,7 +191,12 @@ const docTemplate = `{
         },
         "/recipes": {
             "get": {
-                "description": "List all possible recipes.\n\nRequire Authentication.",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "List all possible recipes.",
                 "consumes": [
                     "application/json"
                 ],
@@ -231,6 +246,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Create recipe.\n\nRequire Admin Role.",
                 "consumes": [
                     "application/json"
@@ -280,7 +300,12 @@ const docTemplate = `{
         },
         "/recipes/favorites": {
             "get": {
-                "description": "list the connected user favorite recipes.\n\nRequire Authentication.",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "list the connected user favorite recipes.",
                 "consumes": [
                     "application/json"
                 ],
@@ -321,7 +346,12 @@ const docTemplate = `{
         },
         "/recipes/{id}/flag-unflag": {
             "post": {
-                "description": "Add or remove a recipe to your favorites.\n\nRequire Authentication.",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Add or remove a recipe to your favorites.",
                 "consumes": [
                     "application/json"
                 ],
@@ -368,6 +398,11 @@ const docTemplate = `{
         },
         "/users": {
             "post": {
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
                 "description": "Create user.\n\nRequire Admin Role.",
                 "consumes": [
                     "application/json"
@@ -417,7 +452,12 @@ const docTemplate = `{
         },
         "/users/my-infos": {
             "get": {
-                "description": "Show connected user informations.\n\nRequire Authentication.",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Show connected user informations.",
                 "consumes": [
                     "application/json"
                 ],
@@ -455,7 +495,12 @@ const docTemplate = `{
         },
         "/users/password-change": {
             "post": {
-                "description": "Update connected user's password\n\nRequire Authentication",
+                "security": [
+                    {
+                        "JWT": []
+                    }
+                ],
+                "description": "Update connected user's password",
                 "consumes": [
                     "application/json"
                 ],
@@ -631,6 +676,13 @@ const docTemplate = `{
                     "x-order": "3"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "JWT": {
+            "type": "apiKey",
+            "name": "Auth",
+            "in": "cookie"
         }
     }
 }`

@@ -37,6 +37,7 @@ func NewUserController(service service.UserService) UserController {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /users [post]
 func (c UserController) Create(ctx *fiber.Ctx) error {
 	var userSchema schema.User
@@ -137,8 +138,6 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 //
 // @Summary      My infos
 // @Description  Show connected user informations.
-// @Description
-// @Description  Require Authentication.
 // @Tags         User Profile
 // @Accept       json
 // @Produce      json
@@ -146,6 +145,7 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /users/my-infos [get]
 func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
@@ -168,8 +168,6 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 //
 // @Summary      Update password
 // @Description  Update connected user's password
-// @Description
-// @Description  Require Authentication
 // @Param request body schema.Password true "Password"
 // @Tags         User Profile
 // @Accept       json
@@ -178,6 +176,7 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
+// @Security JWT
 // @Router       /users/password-change [post]
 func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 	//get user id
