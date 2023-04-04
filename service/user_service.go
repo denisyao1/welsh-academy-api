@@ -120,6 +120,9 @@ func (s userService) validateCredentials(loginSchema schema.Login) (model.User, 
 	user.Username = loginSchema.Username
 	err := s.repo.GetByUsername(&user)
 	if err != nil {
+		if errors.Is(err, exception.ErrRecordNotFound) {
+			return user, exception.ErrInvalidCredentials
+		}
 		return user, err
 	}
 

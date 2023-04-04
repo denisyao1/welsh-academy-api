@@ -8,9 +8,16 @@ import (
 )
 
 type IngredientRepository interface {
+	// Create adds new ingredient to DB.
 	Create(ingredient *model.Ingredient) error
+
+	// FindAll returns all ingredients from DB.
 	FindAll() ([]model.Ingredient, error)
+
+	// IsNotCreated returns true if the ingredient is not present in DB, else false.
 	IsNotCreated(ingredient model.Ingredient) (bool, error)
+
+	// FindNamed returns all ingredients those names equal the names parameters.
 	FindNamed(names []string) ([]model.Ingredient, error)
 }
 

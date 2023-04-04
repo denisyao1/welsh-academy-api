@@ -9,14 +9,31 @@ import (
 )
 
 type RecipeRepository interface {
-	Create(receipe *model.Recipe) error
+	// Create adds new recipe to DB.
+	Create(recipe *model.Recipe) error
+
+	// IsNotCreated returns true is the recipe is not in the DB else false.
 	IsNotCreated(recipe model.Recipe) (bool, error)
+
+	// FindAll returns all recipes in the DB.
 	FindAll() ([]model.Recipe, error)
+
+	// FindAllContainging returns all recipes those ingredients name are in ingredientNames.
 	FindAllContainging(ingredientNames []string) ([]model.Recipe, error)
+
+	// GetByID retunrs recipe a model by its ID.
 	GetByID(recipeID int) (model.Recipe, error)
+
+	// IsInUserFavorites returns true if a recipe is in user favorites else false.
 	IsInUserFavorites(userID, recipeID int) (bool, error)
+
+	// DeleteFromFavorites removes a recipe from user favorites.
 	DeleteFromFavorites(userID, recipeID int) error
+
+	// AddToFavorites add a recipe to user favorites
 	AddToFavorites(userID, recipeID int) error
+
+	// FindFavorites returns all user favorite recipes.
 	FindFavorites(userID int) ([]model.Recipe, error)
 }
 

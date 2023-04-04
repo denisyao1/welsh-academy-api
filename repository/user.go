@@ -9,10 +9,19 @@ import (
 )
 
 type UserRepository interface {
+	// IsNotCreated returns true if user is not present in DB else false
 	IsNotCreated(user model.User) (bool, error)
+
+	// Create adds user to DB.
 	Create(user *model.User) error
+
+	// GetByUsername returns user model corresponding to username.
 	GetByUsername(user *model.User) error
+
+	// GetByID returns user from DB by its ID.
 	GetByID(user *model.User) error
+
+	// UpdatePassword updates user password.
 	UpdatePassword(user *model.User) error
 }
 
