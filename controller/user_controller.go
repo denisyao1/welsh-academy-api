@@ -150,7 +150,7 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	userID, err := strconv.Atoi(ctx.Locals("userID").(string))
 	if err != nil {
-		ctx.Status(Unauthorized).JSON(Map{"message": "Missing or malformed JWT"})
+		ctx.Status(Unauthorized).JSON(Map{"message": "Missing or malformed token"})
 	}
 
 	user, err := c.service.GetInfos(userID)
@@ -184,7 +184,7 @@ func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 	userID, err := c.GetConnectedUserID(ctx)
 	if err != nil {
 		return ctx.Status(Unauthorized).
-			JSON(NewErrMessage("Missing or malformed JWT"))
+			JSON(NewErrMessage("Missing or malformed token"))
 	}
 
 	// get password input

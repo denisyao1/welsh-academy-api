@@ -33,6 +33,10 @@ func New(
 }
 
 func (r Router) InitRoutes(app *fiber.App) {
+	key := r.SigningKey
+	user := model.RoleUser
+	admin := model.RoleAdmin
+	jware := middleware.JwtWare
 
 	api := app.Group("/api/v1")
 
@@ -42,19 +46,17 @@ func (r Router) InitRoutes(app *fiber.App) {
 	api.Get("/logout", r.userController.Logout)
 
 	// required user auth routes
-	api.Use(middleware.JwtWare(r.SigningKey, model.RoleUser))
-	api.Get("/ingredients", r.ingredientController.ListIngredients)
-	api.Get("/recipes", r.recipeController.ListRecipes)
-	api.Post("/recipes/:id/flag-unflag", r.recipeController.FlagOrUnflag)
-	api.Get("/recipes/favorites", r.recipeController.ListUserFavorites)
-	api.Get("/users/my-infos", r.userController.GetInfos)
-	api.Patch("/users/password-change", r.userController.UpdatePassword)
+	api.Get("/ingredients", jware(key, user), r.ingredientController.ListIngredients)
+	api.Get("/recipes", jware(key, user), r.recipeController.ListRecipes)
+	api.Post("/recipes/:id/flag-unflag", jware(key, user), r.recipeController.FlagOrUnflag)
+	api.Get("/recipes/favorites", jware(key, user), r.recipeController.ListUserFavorites)
+	api.Get("/users/my-infos", jware(key, user), r.userController.GetInfos)
+	api.Patch("/users/password-change", jware(key, user), r.userController.UpdatePassword)
 
 	// required admin auth routes
-	api.Use(middleware.JwtWare(r.SigningKey, model.RoleAdmin))
-	api.Post("/users", r.userController.Create)
-	api.Post("/ingredients", r.ingredientController.CreateIngredient)
-	api.Post("/recipes", r.recipeController.CreateRecipe)
+	api.Post("/users", jware(key, admin), r.userController.Create)
+	api.Post("/ingredients", jware(key, admin), r.ingredientController.CreateIngredient)
+	api.Post("/recipes", jware(key, admin), r.recipeController.CreateRecipe)
 
 }
 

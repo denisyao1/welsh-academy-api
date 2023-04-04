@@ -9,13 +9,14 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
+// JwtWare decodes auth token and allows user to access ressources
+// according to its role.
 func JwtWare(siginKey string, role model.Role) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
-		// @TODO avoid non defined route
-		tokenString := ctx.Cookies("jwt")
+		tokenString := ctx.Cookies("Auth")
 		if tokenString == "" {
 			return ctx.Status(fiber.StatusUnauthorized).
-				JSON(fiber.Map{"message": "Missing or malformed JWT"})
+				JSON(fiber.Map{"message": "Missing or malformed token"})
 		}
 
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -27,7 +28,7 @@ func JwtWare(siginKey string, role model.Role) func(ctx *fiber.Ctx) error {
 
 		if err != nil {
 			return ctx.Status(fiber.StatusUnauthorized).
-				JSON(fiber.Map{"message": "Missing or malformed JWT"})
+				JSON(fiber.Map{"message": "Missing or malformed token"})
 		}
 
 		// reference ctx json missing token response
