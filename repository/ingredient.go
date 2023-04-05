@@ -19,6 +19,10 @@ type IngredientRepository interface {
 
 	// FindNamed returns all ingredients those names equal the names parameters.
 	FindNamed(names []string) ([]model.Ingredient, error)
+
+	//GetOrCreate creates an ingredient if it's not already created or retuns it if so.
+	// this fonction is mostly used for testing.
+	GetOrCreate(name string) (model.Ingredient, error)
 }
 
 type gormIngredientRepo struct {
@@ -66,4 +70,22 @@ func (r gormIngredientRepo) FindNamed(names []string) ([]model.Ingredient, error
 	}
 
 	return ingredients, nil
+}
+
+func (r gormIngredientRepo) GetOrCreate(name string) (model.Ingredient, error) {
+	ingredient := model.Ingredient{Name: name}
+	err := r.db.Create(&ingredient).Error
+
+	var errUniqueFailedMsg = "UNIQUE constraint failed: ingredients.name"
+	if err != nil && err.Error() != errUniqueFailedMsg {
+		return ingredient, err
+	}
+
+	if ingredient.ID != 0 {
+		return ingredient, nil
+	}
+
+	err = r.db.Where("name=?", ingredient.Name).First(&ingredient).Error
+
+	return ingredient, err
 }

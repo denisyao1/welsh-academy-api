@@ -157,8 +157,8 @@ const docTemplate = `{
                             "$ref": "#/definitions/controller.Message"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/controller.ErrMessage"
                         }

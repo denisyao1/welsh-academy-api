@@ -35,6 +35,10 @@ type RecipeRepository interface {
 
 	// FindFavorites returns all user favorite recipes.
 	FindFavorites(userID int) ([]model.Recipe, error)
+
+	//GetOrCreate creates a recipe if it's not already created or retuns it if so.
+	// this fonction is mostly used for testing.
+	GetOrCreate(recipe *model.Recipe) error
 }
 
 type gormRecipeRepo struct {
@@ -65,7 +69,6 @@ func (r gormRecipeRepo) FindAll() ([]model.Recipe, error) {
 	err := r.db.Model(&model.Recipe{}).
 		Preload("Ingredients").
 		Find(&recipes).Error
-
 	return recipes, err
 }
 
@@ -82,7 +85,6 @@ func (r gormRecipeRepo) FindAllContainging(ingredientNames []string) ([]model.Re
 		Preload("Ingredients").
 		Where("id in (?)", subQuery).
 		Find(&recipes).Error
-
 	return recipes, err
 
 }
@@ -140,4 +142,21 @@ func (r gormRecipeRepo) FindFavorites(userID int) ([]model.Recipe, error) {
 		Find(&recipes).Error
 
 	return recipes, err
+}
+
+func (r gormRecipeRepo) GetOrCreate(recipe *model.Recipe) error {
+	err := r.db.Create(&recipe).Error
+
+	var errUniqueMsg = "UNIQUE constraint failed: recipes.name"
+	if err != nil && err.Error() != errUniqueMsg {
+		return err
+	}
+
+	if recipe.ID != 0 {
+		return nil
+	}
+
+	err = r.db.Where("name=?", recipe.Name).Preload("Ingredients").First(&recipe).Error
+
+	return err
 }

@@ -80,12 +80,11 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 // @Security JWT
 // @Router       /recipes [get]
 func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
-	ingredientQuery := new(schema.IngredientQuery)
-	errQuery := ctx.QueryParser(ingredientQuery)
+	ingredientQuery := schema.IngredientQuery{}
+	errQuery := ctx.QueryParser(&ingredientQuery)
 	if errQuery != nil {
 		ctx.Status(BadRequest).JSON(NewErrMessage("Failed to read request query string"))
 	}
-
 	ingredientNames := ingredientQuery.Ingredients
 	recipes, err := c.service.ListAllPossible(ingredientNames)
 	if err != nil {

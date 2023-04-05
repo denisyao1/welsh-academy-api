@@ -33,10 +33,10 @@ func main() {
 
 	config := common.LoadConfig()
 
-	gormDB := database.NewGormDB(config)
+	gormDB := database.NewRealDB(config)
 
 	// migrate database
-	gormDB.Migrate()
+	gormDB.MigrateAll()
 
 	ingredientRepo := repository.NewGormIngredientRepository(gormDB.GetDB())
 	ingredientService := service.NewIngredientService(ingredientRepo)

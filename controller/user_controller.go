@@ -54,7 +54,7 @@ func (c UserController) Create(ctx *fiber.Ctx) error {
 		return ctx.Status(BadRequest).JSON(Map{"errors": validationErrs})
 	}
 
-	user, err := c.service.CreateUser(userSchema)
+	user, err := c.service.Create(userSchema)
 
 	if err != nil {
 		if errors.Is(err, exception.ErrDuplicateKey) {
@@ -76,7 +76,7 @@ func (c UserController) Create(ctx *fiber.Ctx) error {
 // @Accept       json
 // @Produce      json
 // @Success      200 {object} Message
-// @Failure      400 {object} ErrMessage
+// @Failure      401 {object} ErrMessage
 // @Failure      500
 // @Router       /login [post]
 func (c UserController) Login(ctx *fiber.Ctx) error {
@@ -107,7 +107,6 @@ func (c UserController) Login(ctx *fiber.Ctx) error {
 
 	// set cookie
 	ctx.Cookie(&jwt_cookie)
-
 	return ctx.Status(OK).JSON(Map{"message": "login successful"})
 }
 
@@ -152,7 +151,6 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	if err != nil {
 		ctx.Status(Unauthorized).JSON(Map{"message": "Missing or malformed token"})
 	}
-
 	user, err := c.service.GetInfos(userID)
 	if err != nil {
 		if errors.Is(err, exception.ErrRecordNotFound) {

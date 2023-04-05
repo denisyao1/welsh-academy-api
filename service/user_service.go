@@ -20,8 +20,8 @@ type UserService interface {
 	// validateCredentials checks if login informations are valid
 	validateCredentials(loginSchema schema.Login) (model.User, error)
 
-	// CreateUser create new user
-	CreateUser(userSchema schema.User) (model.User, error)
+	// Create create new user
+	Create(userSchema schema.User) (model.User, error)
 
 	// CreateAccessToken return new access token
 	CreateAccessToken(loginSchema schema.Login) (string, error)
@@ -40,7 +40,10 @@ type UserService interface {
 	GetInfos(userID int) (model.User, error)
 
 	// CreateDefaultAdmin adds default admin user to DB
-	CreateDefaultAdmin() error
+	CreateDefaultAdmin()
+
+	// CreateIfNotExist creates a user in the DB if it's not already created.
+	CreateIfNotExist(user *model.User) error
 }
 
 type userService struct {
@@ -77,7 +80,7 @@ func (s userService) ValidateUserCreation(userSchema schema.User) []error {
 	return errs
 }
 
-func (s userService) CreateUser(userSchema schema.User) (model.User, error) {
+func (s userService) Create(userSchema schema.User) (model.User, error) {
 
 	user := model.User{Username: userSchema.Username, IsAdmin: userSchema.IsAdmin}
 
@@ -133,7 +136,8 @@ func (s userService) validateCredentials(loginSchema schema.Login) (model.User, 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginSchema.Password))
 
 	if err != nil {
-		return user, exception.ErrInvalidCredentials
+		// return user, exception.ErrInvalidCredentials
+		return user, err
 	}
 
 	return user, nil
@@ -209,40 +213,35 @@ func (s userService) GetInfos(userID int) (model.User, error) {
 	return user, err
 }
 
-func (s userService) CreateDefaultAdmin() error {
+func (s userService) CreateDefaultAdmin() {
 	var admin model.User
 	admin.Username = "admin"
+	admin.Password = "admin"
 	admin.IsAdmin = true
 
 	// check if admin is already created
-	err := s.repo.GetByUsername(&admin)
-
-	if err != nil && !errors.Is(err, exception.ErrRecordNotFound) {
+	// or created it if already exist
+	err := s.CreateIfNotExist(&admin)
+	if err != nil {
 		// Unexpected error occured exist
 		log.Fatalln("Unexpected error : ", err.Error())
 		log.Fatal("Failed to create default admin user")
 	}
+	log.Println("Default admin user created succssefully.")
+}
 
-	if admin.ID != 0 {
-		log.Println("Default admin alredy exists")
+func (s userService) CreateIfNotExist(user *model.User) error {
+	err := s.repo.GetByUsername(user)
+	if err != nil && !errors.Is(err, exception.ErrRecordNotFound) {
+		return err
+	}
+	if user.ID != 0 {
 		return nil
 	}
-
-	// create hash for admin password password
-	password := "admin"
-	hash, hashErr := bcrypt.GenerateFromPassword([]byte(password), 10)
+	hash, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if hashErr != nil {
-		log.Fatalln("Unexpected error : ", err.Error())
-		log.Fatal("Failed to create default admin user")
+		return hashErr
 	}
-
-	admin.Password = string(hash)
-	err = s.repo.Create(&admin)
-	if err != nil {
-		log.Fatalln("Unexpected error : ", err.Error())
-		log.Fatal("Failed to create default admin user")
-	}
-
-	log.Println("default admin user created successfully")
-	return nil
+	user.Password = string(hash)
+	return s.repo.Create(user)
 }

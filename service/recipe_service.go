@@ -120,7 +120,7 @@ func (s recipeService) Create(recipe *model.Recipe) error {
 }
 
 func (s recipeService) ListAllPossible(ingredientNames []string) ([]model.Recipe, error) {
-	if len(ingredientNames) == 0 {
+	if len(ingredientNames) == 0 || (len(ingredientNames) == 1 && ingredientNames[0] == "") {
 		return s.recipeRepo.FindAll()
 	}
 

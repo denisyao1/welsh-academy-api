@@ -39,11 +39,11 @@ func (r userRepo) Create(user *model.User) error {
 
 func (r userRepo) IsNotCreated(user model.User) (bool, error) {
 	var userB model.User
-	err := r.db.Where("username=?", user.Username).Find(&userB).Error
+	err := r.db.Where("username=?", user.Username).First(&userB).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil
+		return true, nil
 	}
-	return true, err
+	return false, err
 }
 
 func (r userRepo) GetByUsername(user *model.User) error {

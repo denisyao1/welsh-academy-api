@@ -1,5 +1,7 @@
 package schema
 
+import "github.com/denisyao1/welsh-academy-api/model"
+
 // IngredientQuery represents ingredients query params
 type IngredientQuery struct {
 	Ingredients []string `query:"ingredients"`
@@ -32,4 +34,14 @@ type Password struct {
 type Recipe struct {
 	Name        string       `json:"name" extensions:"x-order=1"`
 	Ingredients []Ingredient `json:"ingredients" minLength:"1" extensions:"x-order=2"`
+}
+
+type IngredientsResponse struct {
+	Count       int                `json:"count"`
+	Ingredients []model.Ingredient `json:"ingredients"`
+}
+
+type RecipesResponse struct {
+	Count   int            `json:"count"`
+	Recipes []model.Recipe `json:"recipes"`
 }
