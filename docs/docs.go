@@ -65,10 +65,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Ingredient"
-                            }
+                            "$ref": "#/definitions/schema.IngredientsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
                         }
                     },
                     "500": {
@@ -102,8 +105,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/model.Ingredient"
                         }
@@ -112,6 +115,12 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/exception.ErrValidation"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
                         }
                     },
                     "409": {
@@ -222,10 +231,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Recipe"
-                            }
+                            "$ref": "#/definitions/schema.RecipesResponse"
                         }
                     },
                     "400": {
@@ -274,8 +280,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/model.Recipe"
                         }
@@ -283,11 +289,20 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/controller.ErrMessage"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/exception.ErrValidation"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/controller.ErrMessage"
                         }
@@ -320,10 +335,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Recipe"
-                            }
+                            "$ref": "#/definitions/schema.RecipesResponse"
                         }
                     },
                     "400": {
@@ -421,15 +433,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/schema.Login"
+                            "$ref": "#/definitions/schema.User"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/schema.User"
+                            "$ref": "#/definitions/model.User"
                         }
                     },
                     "400": {
@@ -472,7 +484,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/controller.Message"
+                            "$ref": "#/definitions/model.User"
                         }
                     },
                     "400": {
@@ -487,6 +499,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/controller.ErrMessage"
                         }
                     },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error"
                     }
@@ -494,7 +512,7 @@ const docTemplate = `{
             }
         },
         "/users/password-change": {
-            "post": {
+            "patch": {
                 "security": [
                     {
                         "JWT": []
@@ -581,6 +599,7 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer",
+                    "x-order": "1",
                     "example": 1
                 },
                 "name": {
@@ -594,19 +613,34 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer",
+                    "x-order": "1",
                     "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "x-order": "2"
+                },
+                "making": {
+                    "type": "string",
+                    "x-order": "3"
                 },
                 "ingredients": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Ingredient"
                     }
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "username": {
+                    "type": "string",
+                    "x-order": "1"
                 },
-                "making": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
+                "admin": {
+                    "type": "boolean"
                 }
             }
         },
@@ -615,6 +649,20 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "schema.IngredientsResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Ingredient"
+                    }
                 }
             }
         },
@@ -651,12 +699,30 @@ const docTemplate = `{
                     "type": "string",
                     "x-order": "1"
                 },
+                "making": {
+                    "type": "string",
+                    "x-order": "2"
+                },
                 "ingredients": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/schema.Ingredient"
                     },
-                    "x-order": "2"
+                    "x-order": "3"
+                }
+            }
+        },
+        "schema.RecipesResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "recipes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Recipe"
+                    }
                 }
             }
         },

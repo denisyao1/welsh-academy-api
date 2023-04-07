@@ -66,7 +66,7 @@ func TestCreateRecipe(t *testing.T) {
 			making:      "Mix all",
 			ingredients: `[{"name":"ingredient01"},{"name":"Tomato"}]`,
 			statusCode:  BadRequest,
-			description: "Contains one undefined ingredient should return BadRequest",
+			description: "Contains one undefined ingredient, should return BadRequest",
 		},
 		{
 			name:        "recipe0",
@@ -74,6 +74,13 @@ func TestCreateRecipe(t *testing.T) {
 			ingredients: `[{"name":"ingredient01"},{"name":"ingredient02"}]`,
 			statusCode:  Created,
 			description: "Valid input, recipe should be created",
+		},
+		{
+			name:        "recipe0",
+			making:      "Mix all",
+			ingredients: `[{"name":"ingredient01"},{"name":"ingredient01"}]`,
+			statusCode:  BadRequest,
+			description: "Contains a duplicate ingredient, should return bad Request",
 		},
 	}
 
@@ -236,29 +243,46 @@ func TestFlagUnflagRecipes(t *testing.T) {
 		recipeID    int
 		isPresent   bool
 		number      int // number of recipe in user favorites
+		statusCode  int
 		description string
 	}{
 		{
 			recipeID:    recipe1.ID,
 			isPresent:   true,
 			number:      1,
+			statusCode:  200,
 			description: "recipe 1 should be in user favorites",
 		},
 		{
 			recipeID:    recipe2.ID,
 			isPresent:   true,
 			number:      2,
+			statusCode:  200,
 			description: "recipe 2 should be in user favorites",
 		},
 		{
 			recipeID:    recipe1.ID,
 			number:      1,
+			statusCode:  200,
 			description: "recipe 1 shouldn't be in user favorites",
 		},
 		{
 			recipeID:    recipe2.ID,
 			number:      0,
+			statusCode:  200,
 			description: "recipe 2 shouldn't be in user favorites",
+		},
+		{
+			recipeID:    0,
+			number:      0,
+			statusCode:  400,
+			description: "recipe 0 doesn't existed  should return bad request",
+		},
+		{
+			recipeID:    10,
+			number:      0,
+			statusCode:  400,
+			description: "recipe 10 doesn't existed  should return bad request",
 		},
 	}
 
@@ -267,7 +291,10 @@ func TestFlagUnflagRecipes(t *testing.T) {
 		req := httptest.NewRequest(PostMethod, url, nil)
 		req.AddCookie(authCookie)
 		resp, _ := App.Test(req, -1)
-		assert.Equal(200, resp.StatusCode, "request should be OK")
+		assert.Equal(tt.statusCode, resp.StatusCode, "request should be OK")
+		if resp.StatusCode != 200 {
+			continue
+		}
 		ok, _ := recipeRepo.IsInUserFavorites(user.ID, tt.recipeID)
 		assert.True(ok == tt.isPresent, tt.description)
 		recipes, _ := recipeRepo.FindFavorites(user.ID)

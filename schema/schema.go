@@ -33,7 +33,8 @@ type Password struct {
 // Recipe models inputs user has to provide to create recipe
 type Recipe struct {
 	Name        string       `json:"name" extensions:"x-order=1"`
-	Ingredients []Ingredient `json:"ingredients" minLength:"1" extensions:"x-order=2"`
+	Making      string       `json:"making" extensions:"x-order=2"`
+	Ingredients []Ingredient `json:"ingredients" minLength:"1" extensions:"x-order=3"`
 }
 
 type IngredientsResponse struct {

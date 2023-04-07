@@ -22,6 +22,7 @@ definitions:
       id:
         example: 1
         type: integer
+        x-order: "1"
       name:
         example: Tomato
         type: string
@@ -31,19 +32,39 @@ definitions:
       id:
         example: 1
         type: integer
+        x-order: "1"
       ingredients:
         items:
           $ref: '#/definitions/model.Ingredient'
         type: array
       making:
         type: string
+        x-order: "3"
       name:
         type: string
+        x-order: "2"
+    type: object
+  model.User:
+    properties:
+      admin:
+        type: boolean
+      username:
+        type: string
+        x-order: "1"
     type: object
   schema.Ingredient:
     properties:
       name:
         type: string
+    type: object
+  schema.IngredientsResponse:
+    properties:
+      count:
+        type: integer
+      ingredients:
+        items:
+          $ref: '#/definitions/model.Ingredient'
+        type: array
     type: object
   schema.Login:
     properties:
@@ -70,10 +91,22 @@ definitions:
         items:
           $ref: '#/definitions/schema.Ingredient'
         type: array
+        x-order: "3"
+      making:
+        type: string
         x-order: "2"
       name:
         type: string
         x-order: "1"
+    type: object
+  schema.RecipesResponse:
+    properties:
+      count:
+        type: integer
+      recipes:
+        items:
+          $ref: '#/definitions/model.Recipe'
+        type: array
     type: object
   schema.User:
     properties:
@@ -123,9 +156,11 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Ingredient'
-            type: array
+            $ref: '#/definitions/schema.IngredientsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
       security:
@@ -148,14 +183,18 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/model.Ingredient'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/exception.ErrValidation'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
         "409":
           description: Conflict
           schema:
@@ -226,9 +265,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Recipe'
-            type: array
+            $ref: '#/definitions/schema.RecipesResponse'
         "400":
           description: Bad Request
           schema:
@@ -261,16 +298,22 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             $ref: '#/definitions/model.Recipe'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controller.ErrMessage'
+            items:
+              $ref: '#/definitions/exception.ErrValidation'
+            type: array
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
@@ -324,9 +367,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Recipe'
-            type: array
+            $ref: '#/definitions/schema.RecipesResponse'
         "400":
           description: Bad Request
           schema:
@@ -356,14 +397,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/schema.Login'
+          $ref: '#/definitions/schema.User'
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            $ref: '#/definitions/schema.User'
+            $ref: '#/definitions/model.User'
         "400":
           description: Bad Request
           schema:
@@ -390,13 +431,17 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/controller.Message'
+            $ref: '#/definitions/model.User'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/controller.ErrMessage'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/controller.ErrMessage'
         "500":
@@ -407,7 +452,7 @@ paths:
       tags:
       - User Profile
   /users/password-change:
-    post:
+    patch:
       consumes:
       - application/json
       description: Update connected user's password

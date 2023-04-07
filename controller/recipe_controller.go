@@ -32,9 +32,10 @@ func NewRecipeController(service service.RecipeService) RecipeController {
 // @Tags         Recipes
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} model.Recipe
-// @Failure      400 {object} ErrMessage || {array} exception.ErrValidation
+// @Success      201 {object} model.Recipe
+// @Failure      400 {array} exception.ErrValidation
 // @Failure      401 {object} ErrMessage
+// @Failure      409 {object} ErrMessage
 // @Failure      500
 // @Security JWT
 // @Router       /recipes [post]
@@ -73,7 +74,7 @@ func (c RecipeController) CreateRecipe(ctx *fiber.Ctx) error {
 // @Tags         Recipes
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} model.Recipe
+// @Success      200 {object} schema.RecipesResponse
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
@@ -140,7 +141,7 @@ func (c RecipeController) FlagOrUnflag(ctx *fiber.Ctx) error {
 // @Tags         User Profile
 // @Accept       json
 // @Produce      json
-// @Success      200 {array} model.Recipe
+// @Success      200 {object} schema.RecipesResponse
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500

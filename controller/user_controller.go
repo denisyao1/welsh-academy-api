@@ -29,11 +29,11 @@ func NewUserController(service service.UserService) UserController {
 // @Description  Create user.
 // @Description
 // @Description  Require Admin Role.
-// @Param request body schema.Login true "User object"
+// @Param request body schema.User true "User object"
 // @Tags         User Management
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} schema.User
+// @Success      201 {object} model.User
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
@@ -140,9 +140,10 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 // @Tags         User Profile
 // @Accept       json
 // @Produce      json
-// @Success      200 {object} Message
+// @Success      200 {object} model.User
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
+// @Failure      409 {object} ErrMessage
 // @Failure      500
 // @Security JWT
 // @Router       /users/my-infos [get]
@@ -175,7 +176,7 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 // @Failure      401 {object} ErrMessage
 // @Failure      500
 // @Security JWT
-// @Router       /users/password-change [post]
+// @Router       /users/password-change [patch]
 func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 	//get user id
 	userID, err := c.GetConnectedUserID(ctx)

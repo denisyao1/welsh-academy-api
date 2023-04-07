@@ -2,7 +2,6 @@ package router
 
 import (
 	"log"
-	"os"
 
 	"github.com/denisyao1/welsh-academy-api/controller"
 	"github.com/denisyao1/welsh-academy-api/middleware"
@@ -61,5 +60,5 @@ func (r Router) InitRoutes(app *fiber.App) {
 }
 
 func (r Router) Start(app *fiber.App) {
-	log.Fatal(app.Listen(":" + os.Getenv("PORT")))
+	log.Fatal(app.Listen(":3000"))
 }

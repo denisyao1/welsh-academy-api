@@ -30,8 +30,9 @@ func NewIngredientController(service service.IngredientService) IngredientContro
 // @Param request body schema.Ingredient true "Ingredient object"
 // @Tags         Ingredients
 // @Produce      json
-// @Success      200 {object} model.Ingredient
+// @Success      201 {object} model.Ingredient
 // @Failure      400 {object} exception.ErrValidation
+// @Failure      401 {object} ErrMessage
 // @Failure      409 {object} ErrMessage
 // @Failure      500
 // @Security JWT
@@ -66,7 +67,8 @@ func (c IngredientController) CreateIngredient(ctx *fiber.Ctx) error {
 // @Description  List ingredients.
 // @Tags         Ingredients
 // @Produce      json
-// @Success      200 {array} model.Ingredient
+// @Success      200 {object} schema.IngredientsResponse
+// @Failure      401 {object} ErrMessage
 // @Failure      500
 // @Security JWT
 // @Router       /ingredients [get]
