@@ -402,6 +402,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/controller.ErrMessage"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error"
                     }
@@ -499,6 +505,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/controller.ErrMessage"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
                         "schema": {
@@ -555,6 +567,12 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/controller.ErrMessage"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/controller.ErrMessage"
                         }

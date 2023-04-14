@@ -275,14 +275,14 @@ func TestFlagUnflagRecipes(t *testing.T) {
 		{
 			recipeID:    0,
 			number:      0,
-			statusCode:  400,
-			description: "recipe 0 doesn't existed  should return bad request",
+			statusCode:  404,
+			description: "recipe 0 doesn't existed  should return not found",
 		},
 		{
 			recipeID:    10,
 			number:      0,
-			statusCode:  400,
-			description: "recipe 10 doesn't existed  should return bad request",
+			statusCode:  404,
+			description: "recipe 10 doesn't existed  should return not found",
 		},
 	}
 

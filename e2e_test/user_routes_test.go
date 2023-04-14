@@ -44,6 +44,11 @@ func TestLogin(t *testing.T) {
 			statusCode:  401,
 			description: "login with wrong password",
 		},
+		{
+			inputs:      []byte(`{"username":"admin", "password": "admin01"}`),
+			statusCode:  401,
+			description: "login with wrong password",
+		},
 	}
 	url := "/api/v1/login"
 	for _, tt := range testCases {

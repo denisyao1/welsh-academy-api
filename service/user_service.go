@@ -136,8 +136,7 @@ func (s userService) validateCredentials(loginSchema schema.Login) (model.User, 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginSchema.Password))
 
 	if err != nil {
-		// return user, exception.ErrInvalidCredentials
-		return user, err
+		return user, exception.ErrInvalidCredentials
 	}
 
 	return user, nil

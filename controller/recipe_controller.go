@@ -105,6 +105,7 @@ func (c RecipeController) ListRecipes(ctx *fiber.Ctx) error {
 // @Produce      json
 // @Success      200 {object} Message
 // @Failure      400 {object} ErrMessage
+// @Failure      404 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
 // @Failure      500
 // @Security JWT
@@ -119,15 +120,15 @@ func (c RecipeController) FlagOrUnflag(ctx *fiber.Ctx) error {
 	// get recipe from path params ID
 	recipeID, err := c.ConvertParamToInt("id", ctx)
 	if err != nil {
-		msg := "recipe not found"
+		msg := "Failed to convert recipe id."
 		return ctx.Status(BadRequest).JSON(NewErrMessage(msg))
 	}
 
 	// add or remove recipe from user favorite
-	message, err := c.service.AddRemoveFavorite(userID, recipeID)
+	message, err := c.service.AddOrRemoveFavorite(userID, recipeID)
 	if err != nil {
 		if err == exception.ErrRecordNotFound {
-			return ctx.Status(BadRequest).JSON(Map{"error": "recipe " + err.Error()})
+			return ctx.Status(NotFound).JSON(Map{"error": "recipe " + err.Error()})
 		}
 		return c.HandleUnExpetedError(err, ctx)
 	}

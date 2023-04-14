@@ -143,6 +143,7 @@ func (c UserController) Logout(ctx *fiber.Ctx) error {
 // @Success      200 {object} model.User
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
+// @Failure      404 {object} ErrMessage
 // @Failure      409 {object} ErrMessage
 // @Failure      500
 // @Security JWT
@@ -155,7 +156,7 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 	user, err := c.service.GetInfos(userID)
 	if err != nil {
 		if errors.Is(err, exception.ErrRecordNotFound) {
-			return ctx.Status(BadRequest).JSON(Map{"error": "user " + err.Error()})
+			return ctx.Status(NotFound).JSON(Map{"error": "user " + err.Error()})
 		}
 		c.HandleUnExpetedError(err, ctx)
 	}
@@ -174,6 +175,7 @@ func (c UserController) GetInfos(ctx *fiber.Ctx) error {
 // @Success      200 {object} Message
 // @Failure      400 {object} ErrMessage
 // @Failure      401 {object} ErrMessage
+// @Failure      404 {object} ErrMessage
 // @Failure      500
 // @Security JWT
 // @Router       /users/password-change [patch]
@@ -199,7 +201,7 @@ func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 		}
 		if errors.Is(err, exception.ErrRecordNotFound) {
 			msg := "user " + err.Error()
-			return ctx.Status(BadRequest).JSON(NewErrMessage(msg))
+			return ctx.Status(NotFound).JSON(NewErrMessage(msg))
 		}
 		return c.HandleUnExpetedError(err, ctx)
 	}

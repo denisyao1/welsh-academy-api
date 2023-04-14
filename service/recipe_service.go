@@ -23,8 +23,8 @@ type RecipeService interface {
 	// least one ingredient of the list of ingredients.
 	ListAllPossible(ingredientNames []string) ([]model.Recipe, error)
 
-	// AddRemoveFavorite adds or remove an recipe to user favorites.
-	AddRemoveFavorite(userID int, recipeID int) (string, error)
+	// AddOrRemoveFavorite adds or remove an recipe to user favorites.
+	AddOrRemoveFavorite(userID int, recipeID int) (string, error)
 
 	// FindUserFavorites lists user favorite recipes.
 	FindUserFavorites(userID int) ([]model.Recipe, error)
@@ -127,7 +127,7 @@ func (s recipeService) ListAllPossible(ingredientNames []string) ([]model.Recipe
 	return s.recipeRepo.FindAllContainging(ingredientNames)
 }
 
-func (s recipeService) AddRemoveFavorite(userID int, recipeID int) (string, error) {
+func (s recipeService) AddOrRemoveFavorite(userID int, recipeID int) (string, error) {
 	// check if recipe existe in the DB
 	_, err := s.recipeRepo.GetByID(recipeID)
 	if err != nil {

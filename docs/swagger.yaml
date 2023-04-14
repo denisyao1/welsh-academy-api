@@ -349,6 +349,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/controller.ErrMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
         "500":
           description: Internal Server Error
       security:
@@ -440,6 +444,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/controller.ErrMessage'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
         "409":
           description: Conflict
           schema:
@@ -476,6 +484,10 @@ paths:
             $ref: '#/definitions/controller.ErrMessage'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/controller.ErrMessage'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/controller.ErrMessage'
         "500":

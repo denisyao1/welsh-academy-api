@@ -38,6 +38,7 @@ var (
 	userService    service.UserService
 	ingredientRepo repository.IngredientRepository
 	recipeRepo     repository.RecipeRepository
+	App            = CreateTestApp()
 )
 
 func CreateTestApp() *fiber.App {
@@ -75,8 +76,6 @@ func CreateTestApp() *fiber.App {
 
 	return app
 }
-
-var App = CreateTestApp()
 
 func login(username, password string) (int, *http.Cookie) {
 
