@@ -206,5 +206,5 @@ func (c UserController) UpdatePassword(ctx *fiber.Ctx) error {
 		return c.HandleUnExpetedError(err, ctx)
 	}
 
-	return ctx.Status(OK).JSON(NewErrMessage("password update successful"))
+	return ctx.Status(OK).JSON(NewMessage("password update successful"))
 }
