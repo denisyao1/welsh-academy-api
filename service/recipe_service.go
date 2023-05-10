@@ -41,7 +41,7 @@ func NewRecipeService(recipeRepo repository.RecipeRepository, ingredientRepo rep
 }
 
 func (s recipeService) Validate(recipe *model.Recipe) []error {
-	var newErrValidation = exception.NewValidationError
+	var newErrValidation = exception.NewErrValidation
 	var errs []error
 
 	// recipe name must be non null
@@ -92,7 +92,7 @@ func (s recipeService) transform(recipe *model.Recipe) []error {
 
 	var errs []error
 	var dbNames []string
-	var newErr = exception.NewValidationError
+	var newErr = exception.NewErrValidation
 
 	for _, elm := range dbIngredients {
 		dbNames = append(dbNames, elm.Name)

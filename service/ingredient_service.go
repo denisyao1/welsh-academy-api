@@ -31,7 +31,7 @@ type ingredientService struct {
 
 func (s ingredientService) Validate(ingredient model.Ingredient) exception.ErrValidation {
 	if ingredient.Name == "" {
-		return exception.NewValidationError("name", "the name is reqired")
+		return exception.NewErrValidation("name", "the name is reqired")
 	}
 	return exception.ErrValidation{}
 

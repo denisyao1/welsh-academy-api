@@ -23,6 +23,6 @@ func (v ErrValidation) Error() string {
 	return fmt.Sprintf("ValidationErr: {field:%s, description:%s}", v.Field, v.Description)
 }
 
-func NewValidationError(field string, description string) ErrValidation {
+func NewErrValidation(field string, description string) ErrValidation {
 	return ErrValidation{Field: field, Description: description}
 }

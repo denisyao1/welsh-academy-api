@@ -56,7 +56,7 @@ func NewUserService(repo repository.UserRepository, jwt_secret string) UserServi
 }
 
 func (s userService) ValidateUserCreation(userSchema schema.User) []error {
-	var newErrValidation = exception.NewValidationError
+	var newErrValidation = exception.NewErrValidation
 	var errs []error
 
 	if userSchema.Username == "" {
